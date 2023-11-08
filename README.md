@@ -11,3 +11,5 @@ To run headless - npx playwright test
 
 
 To run with UI  - npx playwright test --ui
+
+To run Specific test cases : npx playwright test loactionofneededtest
