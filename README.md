@@ -1,7 +1,9 @@
 # playwright-housewroks
 
-Follow steps to install - https://playwright.dev/docs/intro
+Playwright website Docs :  https://playwright.dev/docs/intro 
 
+To install - npm init playwright@latest
+Extension : Playwright by Micrsoft 
 
 To run headless - npx playwright test
 
