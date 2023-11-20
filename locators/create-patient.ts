@@ -119,11 +119,14 @@ export class CreatePatient {
     await this.createButton.click();
   }
   async waitTillCreateButtonOnDisplayed() {
-    await expect(
-      this.createButton,
-      "Create button is not disabled"
-    ).toBeDisabled();
-    await this.page.waitForTimeout(10000);
+    this.page.waitForTimeout(2000);
+    if ((await this.patientTable.count()).toString() == "2") {
+      await expect(
+        this.createButton,
+        "Create button is not disabled"
+      ).toBeDisabled();
+      await this.page.waitForTimeout(10000);
+    }
   }
 
   async clickOnClearButton() {

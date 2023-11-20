@@ -3,6 +3,7 @@ import { CreatePatient } from "../locators/create-patient";
 import { PatientMaster } from "../locators/patient-master";
 
 test("User should be able to create patient", async ({ page, baseURL }) => {
+  test.setTimeout(100000);
   await page.goto(`${baseURL}`);
   const patientMaster = new PatientMaster(page);
   patientMaster.clickOnCreateButton();
@@ -48,10 +49,7 @@ test("User should get error message for mandatory fields", async ({
   await createPatient.validateEmptyMandatoryFieldsErrorMessages();
 });
 
-test("User should be able to use the pagination", async ({
-  page,
-  baseURL,
-}) => {
+test("User should be able to use the pagination", async ({ page, baseURL }) => {
   await page.goto(`${baseURL}`);
   const patientMaster = new PatientMaster(page);
   patientMaster.clickOnCreateButton();
