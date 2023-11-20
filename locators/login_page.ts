@@ -33,6 +33,9 @@ export class LoginPage {
   }
 
   //functions
+  async loginpage() {
+    await this.page.goto("/");
+  }
   async enterUsername(strUser: string) {
     await this.user_name.fill(strUser);
   }

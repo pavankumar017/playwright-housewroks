@@ -1,6 +1,9 @@
 //this example is from to run test sequentially which holds the state of previous test
-
 import { test, expect, Page } from "@playwright/test";
+
+test.beforeAll(async () => {
+  console.log("Before tests");
+});
 
 test.describe("test", async () => {
   let page: Page;
@@ -15,9 +18,12 @@ test.describe("test", async () => {
   });
 
   test("Search for Playwright", async () => {
-    await page.type('input[name="q"]', "Playwright");
     await page.keyboard.press("Enter");
     let text = await page.innerText('//h3[contains(text(),"Playwright:")]');
     expect(text).toContain("Playwright: Fast and reliable");
   });
+});
+
+test.afterAll(async () => {
+  console.log("After tests");
 });
