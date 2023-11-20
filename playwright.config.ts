@@ -10,9 +10,10 @@ import { defineConfig, devices } from "@playwright/test";
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
+  globalSetup: "./global-setup",
   testDir: "./hw-e2e",
   /* Run tests in files in parallel */
-  testMatch: "create-patient.ts",
+  testMatch: "create-patient.spec.ts",
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
@@ -29,6 +30,7 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
+    storageState: "./LoginAuth.json",
   },
 
   /* Configure projects for major browsers */
