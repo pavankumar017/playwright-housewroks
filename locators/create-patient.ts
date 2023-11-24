@@ -30,6 +30,9 @@ export class CreatePatient {
   randomMiddleName: string;
   randomLastName: string;
   randomDateOfBirth: string;
+  firstNameCharacterLimitValue: string;
+  middleNameCharacterLimitValue: string;
+  lastNameCharacterLimitValue: string;
 
   constructor(page: Page) {
     this.page = page;
@@ -76,6 +79,12 @@ export class CreatePatient {
             (new Date().getTime() - new Date(1111, 0, 1).getTime())
       )
     ).toString();
+    this.firstNameCharacterLimitValue =
+      "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
+    this.middleNameCharacterLimitValue =
+      "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
+    this.lastNameCharacterLimitValue =
+      "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
   }
 
   formatDate = (date: Date) => {
@@ -101,6 +110,7 @@ export class CreatePatient {
     await this.selectedDate.click();
   }
   async enterSSN() {
+    let countOfRetryForSSN = 0;
     const numberDictionary = NumberDictionary.generate({
       min: 100000000,
       max: 999999999,
@@ -108,7 +118,25 @@ export class CreatePatient {
     let randomSSN: string = uniqueNamesGenerator({
       dictionaries: [numberDictionary],
     });
-    await this.ssnField.fill(randomSSN);
+    let regExForSSN = new RegExp(
+      /^(?!666|000|9\d{2})\d{3}(?!00)\d{2}(?!0{4})\d{4}$/
+    );
+    let regExForSameDigitForSSN = new RegExp(/^([0-9])\1*$/);
+    while (countOfRetryForSSN < 5) {
+      if (
+        regExForSSN.exec(randomSSN) &&
+        !regExForSameDigitForSSN.test(randomSSN) &&
+        randomSSN !== "123456789"
+      ) {
+        await this.ssnField.fill(randomSSN);
+        break;
+      } else {
+        countOfRetryForSSN++;
+        randomSSN = uniqueNamesGenerator({
+          dictionaries: [numberDictionary],
+        });
+      }
+    }
   }
 
   async clickOnCheckButton() {
@@ -119,7 +147,7 @@ export class CreatePatient {
     await this.createButton.click();
   }
   async waitTillCreateButtonOnDisplayed() {
-    this.page.waitForTimeout(2000);
+    await this.createButton.waitFor();
     if ((await this.patientTable.count()).toString() == "2") {
       await expect(
         this.createButton,
@@ -175,7 +203,7 @@ export class CreatePatient {
   }
 
   async validateEmptyMandatoryFieldsErrorMessages() {
-    await this.page.waitForTimeout(2000);
+    await this.errorAlert.first().waitFor();
     expect(
       this.errorAlert.nth(0),
       "First name required error message is incorrect"
@@ -219,7 +247,7 @@ export class CreatePatient {
   async openCreateFromSideMenu() {
     await this.sideMenuPatients.hover();
     await this.sideMenu.click();
-    await this.page.waitForTimeout(2000);
+    await this.sideMenuCreatePatient.waitFor();
     await this.sideMenuCreatePatient.click();
   }
 
@@ -242,5 +270,38 @@ export class CreatePatient {
     let sortedRank = [...rank];
     sortedRank.sort((one, two) => (one > two ? -1 : 1));
     expect(rank, "Match score order is incorrect").toEqual(sortedRank);
+  }
+
+  async enterCharacterLimitDataInFirstName() {
+    await this.firstName.fill(this.firstNameCharacterLimitValue);
+  }
+
+  async enterCharacterLimitDataInMiddleName() {
+    await this.firstName.fill(this.middleNameCharacterLimitValue);
+  }
+
+  async enterCharacterLimitDataInLastName() {
+    await this.firstName.fill(this.lastNameCharacterLimitValue);
+  }
+
+  async enterInvalidSSN(invalidSSN: string) {
+    await this.ssnField.fill(invalidSSN);
+  }
+
+  async validateErrorOnMaximumCharacter() {
+    await this.clickOnCheckButton();
+    await this.errorAlert.waitFor();
+    expect(
+      (await this.errorAlert.first().innerText()).toString(),
+      "Error message for maximum 64 characters in First name field is incorrect"
+    ).toEqual("Maximum 64 characters allowed.");
+  }
+
+  async validateInvalidSSN() {
+    await this.errorAlert.waitFor();
+    expect(
+      (await this.errorAlert.first().innerText()).toString(),
+      "Error message for invalid SSN is incorrect"
+    ).toEqual("Enter a valid SSN");
   }
 }
