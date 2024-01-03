@@ -26,6 +26,7 @@ export class LoginPage {
     await this.contBtn.click();
   }
   async validateSuccessfulLogin() {
+    await this.page.waitForTimeout(5000);
     await expect(
       this.lockScreenText,
       "Patient Master text not visible after login"
