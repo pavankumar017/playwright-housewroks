@@ -3,7 +3,7 @@ import { LoginPage } from "./locators/login_page";
 
 async function globalSetup() {
   const browser: Browser = await chromium.launch({
-    headless: true,
+    headless: false,
   });
   const context = await browser.newContext();
   const page: Page = await context.newPage();
