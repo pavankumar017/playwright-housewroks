@@ -4,14 +4,14 @@ export class LoginPage {
   readonly user_name: Locator;
   readonly contBtn: Locator;
   readonly pwd: Locator;
-  readonly lockScreenText: Locator;
+  readonly lockScreen: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.user_name = this.page.getByPlaceholder("Enter username");
     this.contBtn = this.page.getByRole("button", { name: "Continue" });
-    this.pwd = this.page.getByTestId("auth-login-password");
-    this.lockScreenText = this.page.getByText("Lock screen");
+    this.pwd = this.page.getByPlaceholder("Enter password");
+    this.lockScreen = this.page.getByTestId("lock-icon");
   }
   async enterUsername(strUser: string) {
     await this.user_name.fill(strUser);
@@ -26,9 +26,10 @@ export class LoginPage {
     await this.contBtn.click();
   }
   async validateSuccessfulLogin() {
+    await this.page.waitForTimeout(5000);
     await expect(
-      this.lockScreenText,
-      "Patient Master text not visible after login"
+      this.lockScreen,
+      "Lock screen not visible after login"
     ).toBeVisible();
   }
 }

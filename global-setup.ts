@@ -3,14 +3,14 @@ import { LoginPage } from "./locators/login_page";
 
 async function globalSetup() {
   const browser: Browser = await chromium.launch({
-    headless: true,
+    headless: false,
   });
   const context = await browser.newContext();
   const page: Page = await context.newPage();
 
-  await page.goto("https://staging-emr.houseworksinc.co/login");
+  await page.goto("https://staging.rbp.houseworksinc.co/login");
   const login = new LoginPage(page);
-  await login.enterUsername("anaFrozen");
+  await login.enterUsername("rucheta19");
   await login.clickOnContinueButton();
   await login.enterPassword("Rucheta@123");
   await login.clickLoginBtn();
