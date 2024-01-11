@@ -14,7 +14,4 @@ export class PatientMaster {
   async clickOnCreateButton() {
     await this.createButton.click();
   }
-  async closePatientMasterTab() {
-    await this.closePatientMaster.first().click();
-  }
 }

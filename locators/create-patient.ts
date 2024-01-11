@@ -1,9 +1,5 @@
 import { Locator, Page, expect } from "@playwright/test";
-import {
-  NumberDictionary,
-  names,
-  uniqueNamesGenerator,
-} from "unique-names-generator";
+import { names, uniqueNamesGenerator } from "unique-names-generator";
 
 export class CreatePatient {
   readonly page: Page;
@@ -16,11 +12,8 @@ export class CreatePatient {
   readonly checkButton: Locator;
   readonly selectedDate: Locator;
   readonly createButton: Locator;
-  readonly ssnField: Locator;
   readonly errorAlert: Locator;
   readonly totalItems: Locator;
-  readonly sideMenuPatients: Locator;
-  readonly sideMenuCreatePatient: Locator;
   readonly recordsPerPage: Locator;
   readonly pageNumberCount: Locator;
   readonly sideMenu: Locator;
@@ -36,32 +29,31 @@ export class CreatePatient {
 
   constructor(page: Page) {
     this.page = page;
-    this.firstName = this.page.getByPlaceholder("Enter First Name");
-    this.middleName = this.page.getByPlaceholder("Enter Middle Name");
-    this.lastName = this.page.getByPlaceholder("Enter Last Name");
-    this.dateOfBirth = this.page.locator("[data-testid='add-patient-dob']");
-    this.sex = this.page.getByLabel("Sex");
+    this.firstName = this.page.getByTestId("first-name");
+    this.middleName = this.page.getByTestId("middle-name");
+    this.lastName = this.page.getByTestId("last-name");
+    this.dateOfBirth = this.page.getByTestId("dob");
+    this.sex = this.page.getByTestId("Sex");
     this.clearButton = this.page.getByRole("button", { name: "Clear" });
     this.createButton = this.page.getByRole("button", { name: "Create" });
-    this.checkButton = this.page.getByTestId("add-patient-check-button");
+    this.checkButton = this.page.getByTestId("create");
     this.selectedDate = this.page.locator("[class*=cell-selected]");
-    this.ssnField = this.page.getByTestId("add-patient-ssn");
-    this.errorAlert = this.page.getByRole("alert");
+    this.errorAlert = this.page
+      .getByTestId("create-patient-form")
+      .getByRole("alert");
     this.totalItems = this.page.getByText("item(s)");
     this.recordsPerPage = this.page.locator(
-      "(//*[@data-testid='patients-table'])/following-sibling::ul[1]/li[@title='Next Page']/following-sibling::li"
+      "(//*[@class='ant-table'])/following-sibling::ul[1]/li[@title='Next Page']/following-sibling::li"
     );
-    this.sideMenuPatients = this.page.getByTestId("activity-Patients");
-    this.sideMenuCreatePatient = this.page.getByTestId("menu-CreatePatient");
     this.pageNumberCount = this.page.locator(
-      "(//*[@data-testid='patients-table'])/following-sibling::ul[1]/li[@title='Next Page']/preceding-sibling::li[1]"
+      "(//*[@class='ant-table'])/following-sibling::ul[1]/li[@title='Next Page']/preceding-sibling::li[1]"
     );
     this.sideMenu = this.page.getByTestId("pin-menu");
     this.nextPage = this.page.locator(
-      "(//*[@data-testid='patients-table'])/following-sibling::ul[1]/li[@title='Next Page']"
+      "(//*[@class='ant-table'])/following-sibling::ul[1]/li[@title='Next Page']"
     );
     this.patientTable = this.page.locator(
-      "(//*[@data-testid='patients-table'])/div/div/table/tbody"
+      "(//*[@class='ant-table'])/div/div/table/tbody"
     );
     this.randomFirstName = uniqueNamesGenerator({
       dictionaries: [names],
@@ -108,35 +100,6 @@ export class CreatePatient {
     await this.dateOfBirth.click();
     await this.dateOfBirth.fill(this.randomDateOfBirth);
     await this.selectedDate.click();
-  }
-  async enterSSN() {
-    let countOfRetryForSSN = 0;
-    const numberDictionary = NumberDictionary.generate({
-      min: 100000000,
-      max: 999999999,
-    });
-    let randomSSN: string = uniqueNamesGenerator({
-      dictionaries: [numberDictionary],
-    });
-    let regExForSSN = new RegExp(
-      /^(?!666|000|9\d{2})\d{3}(?!00)\d{2}(?!0{4})\d{4}$/
-    );
-    let regExForSameDigitForSSN = new RegExp(/^([0-9])\1*$/);
-    while (countOfRetryForSSN < 5) {
-      if (
-        regExForSSN.exec(randomSSN) &&
-        !regExForSameDigitForSSN.test(randomSSN) &&
-        randomSSN !== "123456789"
-      ) {
-        await this.ssnField.fill(randomSSN);
-        break;
-      } else {
-        countOfRetryForSSN++;
-        randomSSN = uniqueNamesGenerator({
-          dictionaries: [numberDictionary],
-        });
-      }
-    }
   }
 
   async clickOnCheckButton() {
@@ -185,10 +148,6 @@ export class CreatePatient {
       this.dateOfBirth,
       "Date of birth name value is not null after clear"
     ).toHaveValue("");
-    await expect(
-      this.ssnField,
-      "SSN value is not null after clear"
-    ).toHaveValue("");
   }
 
   async enterDataIntoMandatoryFields() {
@@ -199,7 +158,6 @@ export class CreatePatient {
 
   async enterDataIntoOptionalFields() {
     await this.enterMiddleName();
-    await this.enterSSN();
   }
 
   async validateEmptyMandatoryFieldsErrorMessages() {
@@ -215,7 +173,19 @@ export class CreatePatient {
     expect(
       this.errorAlert.nth(2),
       "Date of Birth required error message is incorrect"
-    ).toHaveText("Date of Birth is required");
+    ).toHaveText("DOB is required");
+    expect(
+      this.errorAlert.nth(3),
+      "Sex required error message is incorrect"
+    ).toHaveText("Sex is required");
+    expect(
+      this.errorAlert.nth(4),
+      "Disease required error message is incorrect"
+    ).toHaveText("Disease is required");
+    expect(
+      this.errorAlert.nth(5),
+      "Affected Organ required error message is incorrect"
+    ).toHaveText("Affected Organ is required");
   }
 
   async validatePagination() {
@@ -243,12 +213,6 @@ export class CreatePatient {
         actualPageCount
       );
     }
-  }
-  async openCreateFromSideMenu() {
-    await this.sideMenuPatients.hover();
-    await this.sideMenu.click();
-    await this.sideMenuCreatePatient.waitFor();
-    await this.sideMenuCreatePatient.click();
   }
 
   async validateDefaultSort() {
@@ -284,16 +248,11 @@ export class CreatePatient {
     await this.firstName.fill(this.lastNameCharacterLimitValue);
   }
 
-  async enterInvalidSSN(invalidSSN: string) {
-    await this.ssnField.fill(invalidSSN);
-  }
-
   async validateErrorOnMaximumCharacter() {
-    await this.clickOnCheckButton();
     await this.errorAlert.waitFor();
     expect(
       (await this.errorAlert.first().innerText()).toString(),
-      "Error message for maximum 64 characters in First name field is incorrect"
+      "Error message for maximum 64 characters is incorrect"
     ).toEqual("Maximum 64 characters allowed.");
   }
 
@@ -303,5 +262,13 @@ export class CreatePatient {
       (await this.errorAlert.first().innerText()).toString(),
       "Error message for invalid SSN is incorrect"
     ).toEqual("Enter a valid SSN");
+  }
+
+  async validateCreatePatientPage() {
+    await this.page.waitForTimeout(5000);
+    await expect(
+      this.firstName,
+      "Create patient form not visible"
+    ).toBeVisible();
   }
 }

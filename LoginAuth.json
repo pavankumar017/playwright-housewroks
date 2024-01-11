@@ -1,0 +1,75 @@
+{
+  "cookies": [
+    {
+      "name": "CognitoIdentityServiceProvider.f7hpdklq3l1q9mssnmlhbcehd.rucheta19.idToken",
+      "value": "eyJraWQiOiJvZzhJSGZBMHRzdXAwOEdSd3Q2VWNwdEhQVlBQUVVDd0h1Y2VKNUMzN0Q4PSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiJmNjk2Yzk4MS1jNTM5LTQ2NWQtOTZiNy1kMDlmMTY1OThjMGQiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLmFwLXNvdXRoLTEuYW1hem9uYXdzLmNvbVwvYXAtc291dGgtMV95Wng4U0tHaW0iLCJjb2duaXRvOnVzZXJuYW1lIjoicnVjaGV0YTE5IiwicHJlZmVycmVkX3VzZXJuYW1lIjoicnVjaGV0YTE5IiwiYXVkIjoiZjdocGRrbHEzbDFxOW1zc25tbGhiY2VoZCIsImV2ZW50X2lkIjoiYzRlNTMxOWYtMmVhMS00MGEyLWE5YjgtMmQxMDQyMWQzODE4IiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3MDQ5NTQ2NjMsImV4cCI6MTcwNDk1ODI2MywiaWF0IjoxNzA0OTU0NjYzLCJlbWFpbCI6InJnb2d0ZSsxQGhvdXNld29ya3NpbmMuY28ifQ.O8MyT88SgUvDYfrnbZEYJWqzue1z2GJpI7ZLBBFtnr7I2buf35fJY5qM9sAYcDyhhv1Z5s58CumQhWKhVQym86xVI2BRbAwhzKV3U0_JA-761xdLAW0XqGLfGKuI5JQZ3fV3VBHbdiqe8vewtLGTN3ieDV_HL675pj7bz7CEdcR58q6-hNGIpjnh1aBT1LyGrxTsswU1n9DMpIoYndfrrDqf4Sp3b3Q9z6WEgTNXNcgdpSyLi1KdB7pvYPrxCsDJt5eUFp-55l2SbdLnXZxeCSwMBfh52Mf7kxNo8kpzz-3zy8SLs-jMFxjmcVuhO6bL5y2gda__mNCuOtUzDSTM5Q",
+      "domain": "staging.rbp.houseworksinc.co",
+      "path": "/",
+      "expires": 1736490663,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CognitoIdentityServiceProvider.f7hpdklq3l1q9mssnmlhbcehd.rucheta19.accessToken",
+      "value": "eyJraWQiOiJjQmFwMUR0R1BZYVB6a3hPSTFqaFlPdmRzcGE4R25oY210dkZDN1N3ZG9ZPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiJmNjk2Yzk4MS1jNTM5LTQ2NWQtOTZiNy1kMDlmMTY1OThjMGQiLCJldmVudF9pZCI6ImM0ZTUzMTlmLTJlYTEtNDBhMi1hOWI4LTJkMTA0MjFkMzgxOCIsInRva2VuX3VzZSI6ImFjY2VzcyIsInNjb3BlIjoiYXdzLmNvZ25pdG8uc2lnbmluLnVzZXIuYWRtaW4iLCJhdXRoX3RpbWUiOjE3MDQ5NTQ2NjMsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5hcC1zb3V0aC0xLmFtYXpvbmF3cy5jb21cL2FwLXNvdXRoLTFfeVp4OFNLR2ltIiwiZXhwIjoxNzA0OTU4MjYzLCJpYXQiOjE3MDQ5NTQ2NjMsImp0aSI6IjZjODg3MDJiLTEyZWYtNDZlYS1hMTNiLWExZDAxYTkwNmE5OSIsImNsaWVudF9pZCI6ImY3aHBka2xxM2wxcTltc3NubWxoYmNlaGQiLCJ1c2VybmFtZSI6InJ1Y2hldGExOSJ9.w6znqSYZHHDdN1bHlzZbn9myGcRVenwKkWdwn3HAMiIJ2PCzAeTHBcsH-m7W4wJppBZwJFvna-2SAB8aToSM7sYT-Fa_0ARR9QOfwGWB6MLtv6dvEa4NFEIfsWKgXbF1LaeMXgncBq-L0iyWfhrsJ3apY8U6muvXIxv2DffaL3utbtmRMQ76Hn2YPhvb0mpSg65m-T5S5psqSG-NOyGJ_jJnsywF8aMwPUxTUKe9lNVX3ujVH7dWZgVnkvQqkCzIKEtX5PZgRN_GdX5V3CSobrnyOyj_-QOe7lWFdmN29i_8ElWTcM2nD-QTbxCwNsjYJs_KLlrchWjL_-8EH72qng",
+      "domain": "staging.rbp.houseworksinc.co",
+      "path": "/",
+      "expires": 1736490663,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CognitoIdentityServiceProvider.f7hpdklq3l1q9mssnmlhbcehd.rucheta19.refreshToken",
+      "value": "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIiwiYWxnIjoiUlNBLU9BRVAifQ.Ok-NBQHncUl3KvtgBgP-yPBM3PlWP3covXovaqGQ5lkJOW3biq4YL4EGBI8XMAW4N6G18uqdqjOqwyuVmoPITQvBgQxg01de8IO7UC4Fcfs0c-KsBuBs92BNRaFbdqjOkgPQay1K5xGfQXmD4lN_DUp26WsL0iBrwBEcNkamocwXZrQFfw3J9UvIsvsGmwxDNpYI4sd_YF-nyQvieWSN-zRVPic2YrUeeTvH5ZFBGpb4cZ6Ncjp8U5wZ7QQYRGjUpf00Y3c1HL7_SdvurPfCNvkoB3TByPWbg8TfBdcuFtxKG6FIsdqaX2CIX_ubyGB0jcMWVTDOzJyic0TkdP--hg.SNrac_UEdYj6eXRJ.v3_NGggnIRTqNwzmolPa_KvIS15HTyTST9I2ZHp0kfg9xMrMUom4DlTeRB02HOuNiGClHOwzJkn-zRWWL2rVTcyjsvB-MtV5yWNur3q9MaemRWVdcHbG6yk0YtXj11Q-z5vLLBz6h1hdjVF1j6ROm5kszVsPgQviNVhGP_IUfY1aEGzqG8jqRqSJuUiv3SREYOuEzZYVtb1YB-CmMvtC5Vznz1RfPN9NX9ui76ZXs7C0UlMAegyizx6Nc5EUjuSu_lhqifsGzANG7Opt0xv1Wj4h1onOwArO7x9mDP2g9lIPBmVQTdplGXJGy2yMnpLm05amdsgpk7HzZGVq60NnI6GgfjQnTXtBFrxriN5WvA6unMR9gem0wGteh6ZinK5m74DNXHneYgY-cvOqQk2aWfVJ1jZ6-7tPCocWJ91mj0lGbam9rFQi6LNT1pCG5VFHKSCS6GIuebQa3bVZyOOKQaI0YAtNnqz_9BJm29SkCo5I2qkS1_AI-2EIgBAeAE7ERu0_rcFeFxjusKzww7loLP0Tvdkyr_0DmTof3nAjWhNYvKjkLV5D3Fk8dPof9BbLVEc3kBtivsvoz-ERZfw-XxviRpdSnJOnw9tlSSSZrLflnJ4URd3fQr5KGJRTfjdZY0hDoGDfaSnkxRBzxLnv4ZeAU10ikdGtmjh_HunNYQdNZ_RILy2LuqNvReppX1GSX37O26agnznrczErfhj31mS7B6PGXxrMMlDLpyZgdI0UntRTAg6hyxdaQGGAGhb3Q_gNxQe2nT0bT_duMn4WZo4Ywn-yKOnnoTgRc8pTbvdzCN20p3_KlvC9B4Ilw7H81ncvAIKD-kSzdbaoqHtWp6wEL0o_EuVDDUPha6M3mX3lq0tynKTBWS9Uq8DheK8nR5Wedps60sryYBXIpQd0bYW8NVx3lPTXosKMHYbjO6lXijHaOpb7kHEHOkMzNlVTxJ4jVx1-tEN4rgCviOy47CWLD33xIWiTzp-WbTa0Ym_iVAGeSPYQNSsggokqOZy36Qpu_DtMVIqSRw3iNxgS0zqbiutldM8RlEnSKKesXigDHzFG62a3j1w4qZDNiRyulyy2RS8d8lcUQlJNyftoQpccEQJLyfmfsBxNh0rTQ0ozYjsC1IWH7XweCgx4PpOYt3VGU1IVdeSgzaOegwxlGichb_Xyh5alemqjSr_-hELC6HxeqeW-AOVvEFfcEp2DcgwUTR7sgJIMAMSz_RifHY98DvO9Khkhs5YNSLlJC79HXI5DEzqz_REEYqn-5MrQhFt0jashnmSP.v4C4vZRtU3sPlSnK0kMWjQ",
+      "domain": "staging.rbp.houseworksinc.co",
+      "path": "/",
+      "expires": 1736490663,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CognitoIdentityServiceProvider.f7hpdklq3l1q9mssnmlhbcehd.rucheta19.clockDrift",
+      "value": "0",
+      "domain": "staging.rbp.houseworksinc.co",
+      "path": "/",
+      "expires": 1736490663,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CognitoIdentityServiceProvider.f7hpdklq3l1q9mssnmlhbcehd.LastAuthUser",
+      "value": "rucheta19",
+      "domain": "staging.rbp.houseworksinc.co",
+      "path": "/",
+      "expires": 1736490663,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CognitoIdentityServiceProvider.f7hpdklq3l1q9mssnmlhbcehd.rucheta19.userData",
+      "value": "{%22PreferredMfaSetting%22:%22SOFTWARE_TOKEN_MFA%22%2C%22UserAttributes%22:[{%22Name%22:%22sub%22%2C%22Value%22:%22f696c981-c539-465d-96b7-d09f16598c0d%22}%2C{%22Name%22:%22email_verified%22%2C%22Value%22:%22True%22}%2C{%22Name%22:%22preferred_username%22%2C%22Value%22:%22rucheta19%22}%2C{%22Name%22:%22email%22%2C%22Value%22:%22rgogte+1@houseworksinc.co%22}]%2C%22UserMFASettingList%22:[%22SOFTWARE_TOKEN_MFA%22]%2C%22Username%22:%22rucheta19%22}",
+      "domain": "staging.rbp.houseworksinc.co",
+      "path": "/",
+      "expires": 1736490663,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "amplify-signin-with-hostedUI",
+      "value": "false",
+      "domain": "staging.rbp.houseworksinc.co",
+      "path": "/",
+      "expires": 1736490663,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}
