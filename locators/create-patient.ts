@@ -89,9 +89,7 @@ export class CreatePatient {
     this.sexDropdown = ["Male", "Female", "Other", "Choose not to answer"];
     this.diseaseType = this.page.getByTestId("disease-type");
     this.diseaseTypeDropdown = ["Cancer", "Organ Failure"];
-    this.affectedOrgan = this.page.locator(
-      "[data-testid='affected-organ'] input"
-    );
+    this.affectedOrgan = this.page.locator("[data-testid='affected-organ']");
     this.affectedOrganCancerDropdown = [
       "Breast",
       "Colon",
@@ -212,8 +210,8 @@ export class CreatePatient {
     await this.enterFirstName();
     await this.enterLastName();
     await this.selectDateOfBirth();
-    await this.selectSexValue();
     await this.selectDiseaseType();
+    await this.selectSexValue();
   }
 
   async enterDataIntoOptionalFields() {
@@ -417,12 +415,14 @@ export class CreatePatient {
 
   async selectDiseaseType() {
     let randomDiseaseTypeValue = this.diseaseTypeDropdown[randomInt(0, 1)];
+    randomDiseaseTypeValue = "Cancer";
     await this.page.getByText(randomDiseaseTypeValue).click();
     await this.selectAffectedOrgan(randomDiseaseTypeValue);
   }
 
   async selectAffectedOrgan(randomDiseaseTypeValue: string) {
     let randomAffectedOrganValue;
+    let textOfAffectedOrgan = await this.affectedOrgan.innerText();
     if (randomDiseaseTypeValue == "Cancer") {
       randomAffectedOrganValue =
         this.affectedOrganCancerDropdown[
@@ -434,9 +434,18 @@ export class CreatePatient {
           randomInt(0, this.affectedOrganOrganFailureDropdown.length - 1)
         ];
     }
-    await this.affectedOrgan.click();
-    await this.affectedOrgan.fill(randomAffectedOrganValue);
-    await this.affectedOrgan.selectText(randomAffectedOrganValue);
+    let iterator = this.affectedOrganCancerDropdown.length;
+    while (textOfAffectedOrgan.toString() !== randomAffectedOrganValue) {
+      await this.affectedOrgan.click();
+      await this.affectedOrgan.press("ArrowDown");
+      await this.affectedOrgan.press("Enter");
+      textOfAffectedOrgan = await this.page
+        .locator("[class='ant-select-selection-item']")
+        .innerText();
+    }
+    await this.page
+      .locator("span[title=" + randomAffectedOrganValue + "]")
+      .click();
   }
 
   async validateNoDataFound() {
