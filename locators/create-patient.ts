@@ -41,10 +41,10 @@ export class CreatePatient {
     this.middleName = this.page.getByTestId("middle-name");
     this.lastName = this.page.getByTestId("last-name");
     this.dateOfBirth = this.page.getByTestId("dob");
-    this.sex = this.page.locator("[data-testid=sex] input");
+    this.sex = this.page.locator("[data-testid=sex]");
     this.clearButton = this.page.getByRole("button", { name: "Clear" });
     this.createButton = this.page.getByRole("button", { name: "Create" });
-    this.checkButton = this.page.getByTestId("create");
+    this.checkButton = this.page.getByRole("button", { name: "Check" });
     this.selectedDate = this.page.locator("[class*='selected']");
     this.errorAlert = this.page
       .getByTestId("create-patient-form")
@@ -140,6 +140,10 @@ export class CreatePatient {
 
   async enterFirstNameProvided(firstName: string) {
     await this.firstName.fill(firstName);
+  }
+
+  async enterMiddleNameProvided(middleName: string) {
+    await this.middleName.fill(middleName);
   }
 
   async enterDOBProvided(DOB: string) {
@@ -248,7 +252,7 @@ export class CreatePatient {
 
   async validatePagination() {
     if (await this.validatePatientRecordsAvailable()) {
-      await this.page.waitForTimeout(5000);
+      await this.page.waitForTimeout(2000);
       await this.totalItems.isVisible();
       let totalItemsText = (await this.totalItems.innerText()).toString();
       let totalItemsTextArray = totalItemsText.split(" ");
@@ -280,7 +284,7 @@ export class CreatePatient {
   }
 
   async validatePatientRecordsAvailable() {
-    await this.page.waitForTimeout(5000);
+    await this.page.waitForTimeout(2000);
     if (await this.createButton.isDisabled()) {
       return true;
     } else {
@@ -352,13 +356,10 @@ export class CreatePatient {
     await expect(this.clearButton, "Clear button is not enabled").toBeEnabled();
   }
 
-  async validateFutureDateDisabled() {
-    await expect(
-      this.page.locator(
-        "//*[@class='ant-picker-cell-inner ant-picker-cell-today']"
-      ),
-      "Future date is enabled"
-    ).toBeDisabled();
+  async validateFutureDateDisabled(date: string) {
+    await this.dateOfBirth.click();
+    await this.dateOfBirth.fill(date);
+    await expect(this.selectedDate, "Future date is enabled").toHaveCount(0);
   }
 
   async validateNameSearchResult(value: string) {
@@ -384,20 +385,45 @@ export class CreatePatient {
     }
   }
 
-  async validateDOBSearchResult() {
+  async validateDOBSearchResult(expectedDateOfBirth: string) {
     if (await this.validatePatientRecordsAvailable()) {
       let pageCount = await this.pageNumberCount.innerText();
+      let date = expectedDateOfBirth.substring(
+        0,
+        expectedDateOfBirth.indexOf("/")
+      );
+      let month = expectedDateOfBirth.substring(
+        expectedDateOfBirth.indexOf("/") + 1,
+        expectedDateOfBirth.lastIndexOf("/")
+      );
+      let year = expectedDateOfBirth.substring(
+        expectedDateOfBirth.lastIndexOf("/") + 1
+      );
+      let expectedDateOfBirthArray = [
+        date,
+        month,
+        year.substring(0, 2),
+        year.substring(2),
+      ];
+      let result;
       for (let count = Number(pageCount); count > 0; count = count - 1) {
         let tableData = await this.patientTable.innerText();
         let allRecordsArray = tableData.split("\n");
         allRecordsArray.splice(0, 1);
         for (const element of allRecordsArray) {
           let removeRank = element.substring(0, element.lastIndexOf("\t"));
-          let DOB = removeRank.substring(removeRank.lastIndexOf("\t"));
-          const dobRegex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/20\d{2}$/;
-          expect(DOB.trim(), "DOB search result is incorrect").toEqual(
-            expect.stringMatching(dobRegex)
-          );
+          let dateOfBirth = removeRank.substring(removeRank.lastIndexOf("\t"));
+          let actualDateOfBirth = dateOfBirth.trim().split("/");
+          let yearStartValue = actualDateOfBirth[2].substring(0, 2);
+          actualDateOfBirth.push(actualDateOfBirth[2].substring(2));
+          actualDateOfBirth[2] = yearStartValue;
+          expectedDateOfBirthArray.forEach((element) => {
+            if (actualDateOfBirth.includes(element)) {
+              result = true;
+            }
+          });
+          expect(result).toBeTruthy();
+          result = false;
         }
         await this.nextPage.click();
         await this.page.waitForTimeout(2000);
@@ -413,16 +439,29 @@ export class CreatePatient {
     await this.page.click("[title=" + randomSexValue + "]");
   }
 
-  async selectDiseaseType() {
-    let randomDiseaseTypeValue = this.diseaseTypeDropdown[randomInt(0, 1)];
-    randomDiseaseTypeValue = "Cancer";
-    await this.page.getByText(randomDiseaseTypeValue).click();
-    await this.selectAffectedOrgan(randomDiseaseTypeValue);
+  async selectSexValueProvided(value: string) {
+    await this.sex.click();
+    await this.page.click("[title=" + value + "]");
   }
 
-  async selectAffectedOrgan(randomDiseaseTypeValue: string) {
+  async selectDiseaseType() {
+    let randomDiseaseTypeValue = this.diseaseTypeDropdown[randomInt(0, 1)];
+    await this.page
+      .getByLabel(randomDiseaseTypeValue)
+      .and(this.page.getByRole("radio"))
+      .click();
+    await this.selectAffectedOrganBasedOnDiseaseType(randomDiseaseTypeValue);
+  }
+
+  async selectDiseaseTypeProvided(disease: string) {
+    await this.page
+      .getByLabel(disease)
+      .and(this.page.getByRole("radio"))
+      .click();
+  }
+
+  async selectAffectedOrganBasedOnDiseaseType(randomDiseaseTypeValue: string) {
     let randomAffectedOrganValue;
-    let textOfAffectedOrgan = await this.affectedOrgan.innerText();
     if (randomDiseaseTypeValue == "Cancer") {
       randomAffectedOrganValue =
         this.affectedOrganCancerDropdown[
@@ -434,22 +473,38 @@ export class CreatePatient {
           randomInt(0, this.affectedOrganOrganFailureDropdown.length - 1)
         ];
     }
-    let iterator = this.affectedOrganCancerDropdown.length;
-    while (textOfAffectedOrgan.toString() !== randomAffectedOrganValue) {
+    await this.selectAffectedOrganProvided(randomAffectedOrganValue);
+  }
+
+  async selectAffectedOrganProvided(value: string) {
+    let textOfAffectedOrgan = await this.affectedOrgan.innerText();
+    while (textOfAffectedOrgan.toString() !== value) {
       await this.affectedOrgan.click();
       await this.affectedOrgan.press("ArrowDown");
       await this.affectedOrgan.press("Enter");
       textOfAffectedOrgan = await this.page
-        .locator("[class='ant-select-selection-item']")
+        .locator(
+          "[data-testid='affected-organ'] span[class='ant-select-selection-item']"
+        )
         .innerText();
     }
-    await this.page
-      .locator("span[title=" + randomAffectedOrganValue + "]")
-      .click();
   }
 
   async validateNoDataFound() {
     await this.noDataAvailable.waitFor();
     expect(await this.noDataAvailable.isVisible()).toBeTruthy();
+  }
+
+  async validateCheckButtonDisplayed() {
+    await expect(this.checkButton, "Check button is not visible").toHaveText(
+      "Check"
+    );
+  }
+
+  async validateSamePatientRank() {
+    let tableData = await this.patientTable.innerText();
+    let allRecordsArray = tableData.split("\n");
+    allRecordsArray.splice(0, 1);
+    console.log(allRecordsArray);
   }
 }
