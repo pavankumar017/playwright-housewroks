@@ -13,7 +13,6 @@ export default defineConfig({
   globalSetup: "./global-setup",
   testDir: "./hw-e2e",
   /* Run tests in files in parallel */
-  testMatch: "create-patient.spec.ts",
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,

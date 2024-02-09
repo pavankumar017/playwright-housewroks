@@ -10,15 +10,15 @@ async function globalSetup() {
 
   await page.goto("https://staging.rbp.houseworksinc.co/login");
   const login = new LoginPage(page);
-  await login.enterUsername("rucheta19");
+  await login.enterUsername("testuser007");
   await login.clickOnContinueButton();
-  await login.enterPassword("Rucheta@123");
+  await login.enterPassword("Procedure@1");
   await login.clickLoginBtn();
   await login.validateSuccessfulLogin();
 
   await page.context().storageState({ path: "./LoginAuth.json" });
 
-  await browser.close();
+  // await browser.close();
 }
 
 export default globalSetup;
