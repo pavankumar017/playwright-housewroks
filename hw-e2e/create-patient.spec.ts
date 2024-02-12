@@ -339,3 +339,20 @@ test("Create button should change to check after updating affected organ value",
   await createPatient.selectAffectedOrganBasedOnDiseaseType("Organ Failure");
   await createPatient.validateCheckButtonDisplayed();
 });
+
+test("On value change, the current page should reset to first page", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterDOBProvided("01/01/2024");
+  await createPatient.clickOnCheckButton();
+  await createPatient.clickOnNextButton();
+  await createPatient.clearDOB()
+  await createPatient.enterDOBProvided("02/02/2024");
+  await createPatient.clickOnCheckButton();
+  await createPatient.validateFirstPageIsActive();
+});

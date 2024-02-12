@@ -34,6 +34,7 @@ export class CreatePatient {
   readonly affectedOrgan: Locator;
   readonly affectedOrganCancerDropdown: string[];
   readonly affectedOrganOrganFailureDropdown: string[];
+  readonly activePageNumber: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -114,6 +115,9 @@ export class CreatePatient {
       "Heart",
       "Lung",
     ];
+    this.activePageNumber = this.page.locator(
+      "[class*='ant-pagination-item-active']"
+    );
   }
 
   formatDate = (date: Date) => {
@@ -506,5 +510,20 @@ export class CreatePatient {
     let allRecordsArray = tableData.split("\n");
     allRecordsArray.splice(0, 1);
     console.log(allRecordsArray);
+  }
+
+  async clickOnNextButton() {
+    await this.nextPage.click();
+  }
+
+  async validateFirstPageIsActive() {
+    let activePageNumberValue = await this.activePageNumber.innerText();
+    expect(activePageNumberValue, "First page is not active").toBe("1");
+  }
+
+  async clearDOB() {
+    await this.page
+      .locator("(//*[@data-testid='dob'])/parent::div//span[2]")
+      .click();
   }
 }
