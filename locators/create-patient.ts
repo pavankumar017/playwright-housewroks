@@ -5,6 +5,7 @@ import { names, uniqueNamesGenerator } from "unique-names-generator";
 export class CreatePatient {
   readonly page: Page;
   readonly firstName: Locator;
+  readonly mandatoryMark: Locator;
   readonly middleName: Locator;
   readonly lastName: Locator;
   readonly dateOfBirth: Locator;
@@ -35,10 +36,13 @@ export class CreatePatient {
   readonly affectedOrganCancerDropdown: string[];
   readonly affectedOrganOrganFailureDropdown: string[];
   readonly activePageNumber: Locator;
+  readonly diseaseTypeOption: Locator;
+  readonly radioButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.firstName = this.page.getByTestId("first-name");
+    this.mandatoryMark = this.page.locator("[class='ant-form-item-required']");
     this.middleName = this.page.getByTestId("middle-name");
     this.lastName = this.page.getByTestId("last-name");
     this.dateOfBirth = this.page.getByTestId("dob");
@@ -89,6 +93,9 @@ export class CreatePatient {
     );
     this.sexDropdown = ["Male", "Female", "Other", "Choose not to answer"];
     this.diseaseType = this.page.getByTestId("disease-type");
+    this.diseaseTypeOption = this.page.locator(
+      "[data-testid='disease-type'] label"
+    );
     this.diseaseTypeDropdown = ["Cancer", "Organ Failure"];
     this.affectedOrgan = this.page.locator("[data-testid='affected-organ']");
     this.affectedOrganCancerDropdown = [
@@ -118,6 +125,7 @@ export class CreatePatient {
     this.activePageNumber = this.page.locator(
       "[class*='ant-pagination-item-active']"
     );
+    this.radioButton = this.page.locator("[class*='ant-radio']");
   }
 
   formatDate = (date: Date) => {
@@ -349,7 +357,6 @@ export class CreatePatient {
   }
 
   async validateCreatePatientPage() {
-    await this.page.waitForTimeout(5000);
     await expect(
       this.firstName,
       "Create patient form not visible"
@@ -496,7 +503,10 @@ export class CreatePatient {
 
   async validateNoDataFound() {
     await this.noDataAvailable.waitFor();
-    expect(await this.noDataAvailable.isVisible()).toBeTruthy();
+    expect(
+      await this.noDataAvailable,
+      "No data text is not visible"
+    ).toBeVisible();
   }
 
   async validateCheckButtonDisplayed() {
@@ -525,5 +535,81 @@ export class CreatePatient {
     await this.page
       .locator("(//*[@data-testid='dob'])/parent::div//span[2]")
       .click();
+  }
+
+  async validateTotalItemsIsVisible() {
+    if (await this.validatePatientRecordsAvailable()) {
+      expect(this.totalItems, "Total items are not visible").toBeVisible();
+    } else {
+      console.log("No patient records available");
+    }
+  }
+
+  async validateUIFields() {
+    await expect(this.firstName, "First name is not visible").toBeVisible();
+    await expect(this.middleName, "Middle name is not visible").toBeVisible();
+    await expect(this.lastName, "Last name is not visible").toBeVisible();
+    await expect(this.dateOfBirth, "DOB is not visible").toBeVisible();
+    await expect(this.sex, "Sex is not visible").toBeVisible();
+    await expect(this.diseaseType, "Disease type is not visible").toBeVisible();
+    await expect(
+      this.affectedOrgan,
+      "Affected organ is not visible"
+    ).toBeVisible();
+  }
+
+  async validateMandatoryMark() {
+    await this.mandatoryMark.first().waitFor();
+    let expectedListOfMandatoryFields = [
+      "First Name",
+      "Last Name",
+      "DOB",
+      "Sex",
+      "Disease Type",
+      "Affected Organ",
+    ];
+    let actualListOfMandatoryFields = await this.page
+      .locator("[class='ant-form-item-required']")
+      .allTextContents();
+    expect(
+      actualListOfMandatoryFields,
+      "List of mandatory fields are incorrect"
+    ).toStrictEqual(expectedListOfMandatoryFields);
+  }
+
+  async validateDateFormat(expectedDate: string) {
+    expect(this.dateOfBirth, "DOB format is not MM/DD/YYYY").toHaveAttribute(
+      "title",
+      expectedDate
+    );
+  }
+
+  async verifyDiseaseTypeLabel() {
+    let diseaseType = this.page.locator("[title='Disease Type']");
+    await expect(diseaseType, "Disease Type label is incorrect").toHaveText(
+      "Disease Type"
+    );
+  }
+
+  async verifyDiseaseTypeOptions() {
+    for (let i = 0; i < this.diseaseTypeDropdown.length; i++) {
+      await expect(this.diseaseTypeOption.nth(i)).toHaveText(
+        this.diseaseTypeDropdown[i]
+      );
+    }
+  }
+
+  async verifyDiseaseTypeIsRadio() {
+    await expect(this.radioButton.first()).toHaveAttribute(
+      "data-testid",
+      "disease-type"
+    );
+  }
+
+  async verifyAffectedOrganLabel() {
+    let affectedOrgan = this.page.locator("[title='Affected Organ']");
+    await expect(affectedOrgan, "Affected Organ label is incorrect").toHaveText(
+      "Affected Organ"
+    );
   }
 }

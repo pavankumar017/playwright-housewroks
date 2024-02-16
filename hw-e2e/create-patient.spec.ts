@@ -351,8 +351,84 @@ test("On value change, the current page should reset to first page", async ({
   await createPatient.enterDOBProvided("01/01/2024");
   await createPatient.clickOnCheckButton();
   await createPatient.clickOnNextButton();
-  await createPatient.clearDOB()
+  await createPatient.clearDOB();
   await createPatient.enterDOBProvided("02/02/2024");
   await createPatient.clickOnCheckButton();
   await createPatient.validateFirstPageIsActive();
+});
+
+test("User should be able to see total number of items", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterFirstNameProvided("test");
+  await createPatient.clickOnCheckButton();
+  await createPatient.validateTotalItemsIsVisible();
+});
+
+test("User should be able to see all fields", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.validateUIFields();
+});
+
+test("Mandatory fields should have mandatory marks", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterMiddleNameProvided("A");
+  await createPatient.clickOnCheckButton();
+  await createPatient.validateMandatoryMark();
+});
+
+test("DOB date format should be MM/DD/YYYY", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterDOBProvided("01/01/2023");
+  await createPatient.clickOnCheckButton();
+  await createPatient.validateDateFormat("12/31/2022");
+});
+
+test("Verify label of disease type field", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.verifyDiseaseTypeLabel();
+});
+
+test("Verify values of disease type field", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.verifyDiseaseTypeOptions();
+});
+
+test("Verify disease type is radio button", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.verifyDiseaseTypeIsRadio();
+});
+
+test("Verify label of Affected Organ", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.verifyAffectedOrganLabel();
 });
