@@ -4,6 +4,8 @@ export class PatientMaster {
   readonly page: Page;
   readonly createButton: Locator;
   readonly closePatientMaster: Locator;
+  readonly searchField: Locator;
+  readonly table: Locator;
   readonly heading: Locator;
   readonly search: Locator;
   readonly sear_result: Locator;
@@ -16,6 +18,10 @@ export class PatientMaster {
     this.page = page;
     this.createButton = this.page.getByRole("button", { name: "Create" });
     this.closePatientMaster = this.page.getByLabel("remove");
+    this.searchField = this.page.getByTestId("search-filter-input");
+    this.table = this.page.locator(
+      "(//*[@class='table-wrapper'])/div/div/div/div/div/div/table"
+    );
     this.heading = this.page.getByText("Patient Master");
     this.search = this.page.locator("//*[@data-testid='search-filter-input']");
     this.sear_result = this.page.locator(
@@ -33,6 +39,12 @@ export class PatientMaster {
 
   async clickOnCreateButton() {
     await this.createButton.click();
+  }
+  async validateCreatedPatient(text: string) {
+    await this.searchField.fill(text);
+    await this.page.waitForTimeout(3000);
+    let tableData = await this.table.innerText();
+    expect(tableData).toContain(text);
   }
 
   async search_enter(search_key) {
