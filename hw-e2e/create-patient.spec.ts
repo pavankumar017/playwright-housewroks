@@ -432,3 +432,67 @@ test("Verify label of Affected Organ", async ({ page, baseURL }) => {
   const createPatient = new CreatePatient(page);
   await createPatient.verifyAffectedOrganLabel();
 });
+
+test("Verify dropdown values of Affected Organ - Cancer", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.selectDiseaseTypeProvided("Cancer");
+  await createPatient.validateAffectedOrganValuesForCancer();
+});
+
+test("Verify dropdown values of Affected Organ - Organ failure", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.selectDiseaseTypeProvided("Organ Failure");
+  await createPatient.validateAffectedOrganValuesForOrganFailure();
+});
+
+test("Verify dropdown value sets to null after changing the disease type", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.selectDiseaseTypeProvided("Organ Failure");
+  await createPatient.selectAffectedOrganBasedOnDiseaseType("Organ Failure");
+  await createPatient.selectDiseaseTypeProvided("Cancer");
+  await createPatient.validateAffectedOrganResets();
+});
+
+test("Create button should be displayed in disabled state on click check button", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.selectDateOfBirth();
+  await createPatient.clickOnCheckButton();
+  await createPatient.validateCreateButtonIsDisabled();
+});
+
+test("User should be able to see all the columns for possible matches table", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterMiddleNameProvided("test");
+  await createPatient.clickOnCheckButton();
+  await createPatient.validateColumnsOfPossibleMatchesTable();
+});

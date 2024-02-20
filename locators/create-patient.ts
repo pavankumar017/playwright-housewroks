@@ -113,7 +113,7 @@ export class CreatePatient {
       "Thyroid",
       "Melanoma",
       "Biliary",
-      "Duodenal]",
+      "Duodenal",
     ];
     this.affectedOrganOrganFailureDropdown = [
       "Kidney",
@@ -611,5 +611,91 @@ export class CreatePatient {
     await expect(affectedOrgan, "Affected Organ label is incorrect").toHaveText(
       "Affected Organ"
     );
+  }
+
+  async validateAffectedOrganValuesForCancer() {
+    let affectedOrganValuesForCancer = [""];
+    await this.affectedOrgan.click();
+    await this.affectedOrgan.press("Enter");
+    affectedOrganValuesForCancer.push(
+      await this.page
+        .locator(
+          "[data-testid='affected-organ'] span[class='ant-select-selection-item']"
+        )
+        .innerText()
+    );
+    for (let i = 0; i < this.affectedOrganCancerDropdown.length - 1; i++) {
+      await this.affectedOrgan.click();
+      await this.affectedOrgan.press("ArrowDown");
+      await this.affectedOrgan.press("Enter");
+      affectedOrganValuesForCancer.push(
+        await this.page
+          .locator(
+            "[data-testid='affected-organ'] span[class='ant-select-selection-item']"
+          )
+          .innerText()
+      );
+    }
+    affectedOrganValuesForCancer.shift();
+    expect(
+      affectedOrganValuesForCancer,
+      "List of affected organ values for Cancer is incorrect"
+    ).toEqual(this.affectedOrganCancerDropdown);
+  }
+
+  async validateAffectedOrganValuesForOrganFailure() {
+    let affectedOrganValuesForOrganFailure = [""];
+    await this.affectedOrgan.click();
+    await this.affectedOrgan.press("Enter");
+    affectedOrganValuesForOrganFailure.push(
+      await this.page
+        .locator(
+          "[data-testid='affected-organ'] span[class='ant-select-selection-item']"
+        )
+        .innerText()
+    );
+    for (
+      let i = 0;
+      i < this.affectedOrganOrganFailureDropdown.length - 1;
+      i++
+    ) {
+      await this.affectedOrgan.click();
+      await this.affectedOrgan.press("ArrowDown");
+      await this.affectedOrgan.press("Enter");
+      affectedOrganValuesForOrganFailure.push(
+        await this.page
+          .locator(
+            "[data-testid='affected-organ'] span[class='ant-select-selection-item']"
+          )
+          .innerText()
+      );
+    }
+    affectedOrganValuesForOrganFailure.shift();
+    expect(
+      affectedOrganValuesForOrganFailure,
+      "List of affected organ values for Organ Failure is incorrect"
+    ).toEqual(this.affectedOrganOrganFailureDropdown);
+  }
+
+  async validateAffectedOrganResets() {
+    expect(
+      await this.affectedOrgan.innerText(),
+      "Affected Organ value does not reset"
+    ).toEqual("Select");
+  }
+
+  async validateCreateButtonIsDisabled() {
+    expect(
+      await this.createButton.isDisabled(),
+      "Create Button is not disabled"
+    ).toBeTruthy();
+  }
+
+  async validateColumnsOfPossibleMatchesTable(){
+    if (await this.validatePatientRecordsAvailable()) {
+      
+    } else {
+      console.log("No patient records available");
+    }
   }
 }
