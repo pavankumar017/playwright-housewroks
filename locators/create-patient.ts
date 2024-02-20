@@ -38,6 +38,7 @@ export class CreatePatient {
   readonly activePageNumber: Locator;
   readonly diseaseTypeOption: Locator;
   readonly radioButton: Locator;
+  readonly patientTableColumnNames: string[];
 
   constructor(page: Page) {
     this.page = page;
@@ -126,6 +127,7 @@ export class CreatePatient {
       "[class*='ant-pagination-item-active']"
     );
     this.radioButton = this.page.locator("[class*='ant-radio']");
+    this.patientTableColumnNames = ["PATIENT ID", "NAME", "DOB", "MATCH SCORE"];
   }
 
   formatDate = (date: Date) => {
@@ -691,9 +693,15 @@ export class CreatePatient {
     ).toBeTruthy();
   }
 
-  async validateColumnsOfPossibleMatchesTable(){
+  async validateColumnsOfPossibleMatchesTable() {
     if (await this.validatePatientRecordsAvailable()) {
-      
+      let tableData = await this.patientTable.innerText();
+      let allRecordsArray = tableData.split("\n");
+      let columnNamesArray = allRecordsArray[0].split("\t");
+      expect(
+        this.patientTableColumnNames,
+        "Possible matches table columns are not as expected"
+      ).toEqual(columnNamesArray);
     } else {
       console.log("No patient records available");
     }
