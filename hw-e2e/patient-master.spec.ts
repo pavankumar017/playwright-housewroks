@@ -67,13 +67,3 @@ test("Test to validate Organ Values", async ({ page, baseURL }) => {
   await patientMaster.click_on_select_dropdown();
   await patientMaster.verify_organ_values();
 });
-
-test("Test to validate values of criteria Phase", async ({
-  page,
-  baseURL,
-}) => {});
-
-test("Test to validate values of Criteria Status", async ({
-  page,
-  baseURL,
-}) => {});
