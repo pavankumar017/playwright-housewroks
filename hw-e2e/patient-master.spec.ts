@@ -1,9 +1,5 @@
 import { test } from "@playwright/test";
-import { CreatePatient } from "../locators/create-patient";
 import { PatientMaster } from "../locators/patient-master";
-import { SideMenu } from "../locators/side-menu";
-import { assert } from "console";
-import { TIMEOUT } from "dns";
 
 test("Test to verify patient Master page is displyed", async ({
   page,
@@ -21,21 +17,19 @@ test("Test to verify search patient in patient master ", async ({
   await page.goto(`${baseURL}`);
   const patientMaster = new PatientMaster(page);
   await patientMaster.heading.isVisible();
-  await page.waitForTimeout(1000);
   await patientMaster.search_enter("james");
   await patientMaster.verify_search_result();
 });
 
-test("Test to verify search invalid patiend", async ({ page, baseURL }) => {
+test("Test to verify search invalid patient", async ({ page, baseURL }) => {
   await page.goto(`${baseURL}`);
   const patientMaster = new PatientMaster(page);
   await patientMaster.heading.isVisible();
-  await page.waitForTimeout(1000);
   await patientMaster.search_enter("ASDASDASDasd");
   await patientMaster.verify_no_data_found();
 });
 
-test("Test to validate criterias", async ({ page, baseURL }) => {
+test("Test to validate list of criterias", async ({ page, baseURL }) => {
   await page.goto(`${baseURL}`);
   const patientMaster = new PatientMaster(page);
   await patientMaster.click_on_filters();

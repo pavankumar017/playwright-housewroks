@@ -49,6 +49,7 @@ export class PatientMaster {
 
   async search_enter(search_key) {
     this.search_key_recieved = search_key;
+    await this.page.waitForTimeout(1000);
     await this.search.fill(this.search_key_recieved);
     await this.page.waitForTimeout(10000);
   }
@@ -81,8 +82,6 @@ export class PatientMaster {
       let current_text = await this.page
         .locator("//div[@title='DOB']/parent::div/div" + "[" + i + "]")
         .textContent();
-      console.log(current_text);
-      console.log(dropdown_expected[i - 1]);
       expect(current_text).toEqual(dropdown_expected[i - 1]);
     }
   }
