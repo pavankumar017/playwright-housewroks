@@ -8,11 +8,11 @@ export class PatientMaster {
   readonly table: Locator;
   readonly heading: Locator;
   readonly search: Locator;
-  readonly sear_result: Locator;
-  search_key_recieved: string;
+  readonly searchResult: Locator;
+  searchKeyRecieved: string;
   readonly filter: Locator;
-  readonly criteria_dropdown: Locator;
-  readonly select_dropdown: Locator;
+  readonly criteriaDropdown: Locator;
+  readonly selectDropdown: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -24,15 +24,14 @@ export class PatientMaster {
     );
     this.heading = this.page.getByText("Patient Master");
     this.search = this.page.locator("//*[@data-testid='search-filter-input']");
-    this.sear_result = this.page.locator(
+    this.searchResult = this.page.locator(
       "//tbody[@class ='ant-table-tbody']/child::tr/td[2]"
     );
-    // this.search_key = "James";
     this.filter = this.page.locator("//*[@data-testid='down-arrow']");
-    this.criteria_dropdown = this.page.locator(
+    this.criteriaDropdown = this.page.locator(
       "//*[@data-testid='criteria-dropdown']"
     );
-    this.select_dropdown = this.page.locator(
+    this.selectDropdown = this.page.locator(
       "//div[@data-testid='criteria-value-dropdown']"
     );
   }
@@ -47,30 +46,28 @@ export class PatientMaster {
     expect(tableData).toContain(text);
   }
 
-  async search_enter(search_key) {
-    this.search_key_recieved = search_key;
+  async searchEnter(searchKey) {
+    this.searchKeyRecieved = searchKey;
     await this.page.waitForTimeout(1000);
-    await this.search.fill(this.search_key_recieved);
+    await this.search.fill(this.searchKeyRecieved);
     await this.page.waitForTimeout(10000);
   }
 
-  async verify_search_result() {
-    let text = await this.sear_result.innerText();
-    await expect(text).toEqual(
-      expect.stringContaining(this.search_key_recieved)
-    );
+  async verifySearchResult() {
+    let text = await this.searchResult.innerText();
+    await expect(text).toEqual(expect.stringContaining(this.searchKeyRecieved));
   }
 
-  async click_on_filters() {
+  async clickOnFilters() {
     await this.filter.click();
   }
 
-  async click_on_criteria_dropdown() {
-    await this.criteria_dropdown.click();
+  async clickOnCriteriaDropdown() {
+    await this.criteriaDropdown.click();
   }
 
-  async verify_criteria_dropdown() {
-    let dropdown_expected = [
+  async verifyCriteriaDropdown() {
+    let dropdownExpected = [
       "DOB",
       "Disease",
       "Organ",
@@ -79,37 +76,37 @@ export class PatientMaster {
       "Status",
     ];
     for (let i = 1; i < 7; i++) {
-      let current_text = await this.page
+      let currentText = await this.page
         .locator("//div[@title='DOB']/parent::div/div" + "[" + i + "]")
         .textContent();
-      expect(current_text).toEqual(dropdown_expected[i - 1]);
+      expect(currentText).toEqual(dropdownExpected[i - 1]);
     }
   }
 
-  async verify_no_data_found() {
+  async verifyNoDataFound() {
     await this.page.getByText("No patients found").isVisible();
   }
 
-  async select_criteria_dropdown(criteria) {
+  async selectCriteriaDropdown(criteria) {
     await this.page.getByText(criteria, { exact: true }).click();
   }
 
-  async click_on_select_dropdown() {
-    await this.select_dropdown.click();
+  async clickOnSelectDropdown() {
+    await this.selectDropdown.click();
   }
-  async verify_disease_values() {
-    let disease_drop_down_values = ["Cancer", "Organ Failure"];
+  async verifyDiseaseValues() {
+    let diseaseDropDownValues = ["Cancer", "Organ Failure"];
 
-    for (let i = 1; i <= disease_drop_down_values.length; i++) {
-      let current_values = await this.page
+    for (let i = 1; i <= diseaseDropDownValues.length; i++) {
+      let currentValues = await this.page
         .locator("//div[@title = 'Cancer']/parent::div/div" + "[" + i + "]")
         .textContent();
-      expect(current_values).toEqual(disease_drop_down_values[i - 1]);
+      expect(currentValues).toEqual(diseaseDropDownValues[i - 1]);
     }
   }
 
-  async verify_organ_values() {
-    let organ_drop_down_values = [
+  async verifyOrganValues() {
+    let organDropDownValues = [
       "Kidney",
       "Liver",
       "Pancreas",
@@ -129,11 +126,11 @@ export class PatientMaster {
       "Duodenal",
     ];
 
-    for (let i = 1; i <= organ_drop_down_values.length; i++) {
-      let current_values = await this.page
+    for (let i = 1; i <= organDropDownValues.length; i++) {
+      let currentValues = await this.page
         .locator("//div[@title = 'Kidney']/parent::div/div" + "[" + i + "]")
         .textContent();
-      expect(current_values).toEqual(organ_drop_down_values[i - 1]);
+      expect(currentValues).toEqual(organDropDownValues[i - 1]);
       await this.page.keyboard.press("ArrowDown");
       // await this.page.keyboardpress("Enter");
     }
