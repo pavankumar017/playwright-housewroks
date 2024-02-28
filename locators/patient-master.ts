@@ -41,19 +41,21 @@ export class PatientMaster {
   }
   async validateCreatedPatient(text: string) {
     await this.searchField.fill(text);
-    await this.page.waitForTimeout(3000);
+    // await this.page.waitForSelector(
+    //   "//tbody[@class ='ant-table-tbody']/child::tr/td[2]"
+    // );
+    await this.searchResult.waitFor();
     let tableData = await this.table.innerText();
     expect(tableData).toContain(text);
   }
 
   async searchEnter(searchKey) {
     this.searchKeyRecieved = searchKey;
-    await this.page.waitForTimeout(1000);
     await this.search.fill(this.searchKeyRecieved);
-    await this.page.waitForTimeout(10000);
   }
 
   async verifySearchResult() {
+    await this.searchResult.waitFor();
     let text = await this.searchResult.innerText();
     await expect(text).toEqual(expect.stringContaining(this.searchKeyRecieved));
   }
