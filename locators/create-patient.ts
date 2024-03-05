@@ -39,6 +39,7 @@ export class CreatePatient {
   readonly diseaseTypeOption: Locator;
   readonly radioButton: Locator;
   readonly patientTableColumnNames: string[];
+  readonly possibleMatchesHelpText: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -128,6 +129,9 @@ export class CreatePatient {
     );
     this.radioButton = this.page.locator("[class*='ant-radio']");
     this.patientTableColumnNames = ["PATIENT ID", "NAME", "DOB", "MATCH SCORE"];
+    this.possibleMatchesHelpText = this.page.getByText(
+      "Enter the above details and press “Check”."
+    );
   }
 
   formatDate = (date: Date) => {
@@ -313,7 +317,7 @@ export class CreatePatient {
       for (let count = Number(pageCount); count > 0; count = count - 1) {
         let tableData = await this.patientTable.innerText();
         let allRecordsArray = tableData.split("\n");
-        allRecordsArray.splice(0, 12);
+        allRecordsArray.splice(0, 1);
         for (const element of allRecordsArray) {
           let indexForMatchScore = element.lastIndexOf("\t");
           let actualRankOrder = element.substring(indexForMatchScore + 1);
@@ -398,20 +402,13 @@ export class CreatePatient {
     }
   }
 
-  async validateDOBSearchResult(expectedDateOfBirth: string) {
+  async validateDOBSearchResult(dateOfBirth: string) {
     if (await this.validatePatientRecordsAvailable()) {
       let pageCount = await this.pageNumberCount.innerText();
-      let date = expectedDateOfBirth.substring(
-        0,
-        expectedDateOfBirth.indexOf("/")
-      );
-      let month = expectedDateOfBirth.substring(
-        expectedDateOfBirth.indexOf("/") + 1,
-        expectedDateOfBirth.lastIndexOf("/")
-      );
-      let year = expectedDateOfBirth.substring(
-        expectedDateOfBirth.lastIndexOf("/") + 1
-      );
+      let expectedDateOfBirth = dateOfBirth.split("/");
+      let date = expectedDateOfBirth[0];
+      let month = expectedDateOfBirth[1];
+      let year = expectedDateOfBirth[2];
       let expectedDateOfBirthArray = [
         date,
         month,
@@ -521,7 +518,10 @@ export class CreatePatient {
     let tableData = await this.patientTable.innerText();
     let allRecordsArray = tableData.split("\n");
     allRecordsArray.splice(0, 1);
-    console.log(allRecordsArray);
+    let rank = allRecordsArray[0]
+      .substring(allRecordsArray[0].lastIndexOf("\t"))
+      .trim();
+    expect(rank, "Rank is not 1 for exact match patient").toEqual("1");
   }
 
   async clickOnNextButton() {
@@ -705,5 +705,157 @@ export class CreatePatient {
     } else {
       console.log("No patient records available");
     }
+  }
+
+  async validateBackgroundColorOfClearButton() {
+    await this.clearButton.waitFor();
+    expect(this.clearButton).toHaveCSS(
+      "background-color",
+      "rgb(255, 255, 255)"
+    );
+  }
+
+  async validateBackgroundColorOfDisabledCheckButton() {
+    await this.checkButton.waitFor();
+    expect(this.checkButton).toHaveCSS(
+      "background-color",
+      "rgba(0, 0, 0, 0.04)"
+    );
+  }
+
+  async validateBackgroundColorOfCheckButton() {
+    await this.checkButton.waitFor();
+    expect(await this.checkButton.isEnabled()).toBeTruthy();
+    await this.page.waitForTimeout(2000);
+    expect(this.checkButton).toHaveCSS("background-color", "rgb(47, 84, 235)");
+  }
+
+  async validateBackgroundColorOfDisabledCreateButton() {
+    await this.createButton.waitFor();
+    expect(this.createButton).toHaveCSS(
+      "background-color",
+      "rgba(0, 0, 0, 0.04)"
+    );
+  }
+
+  async validatePatientIDFormat() {
+    if (await this.validatePatientRecordsAvailable()) {
+      let tableData = await this.patientTable.innerText();
+      let allRecordsArray = tableData.split("\n");
+      allRecordsArray.splice(0, 1);
+      let regularExpression = "^[0-9]{8}$";
+      for (const element of allRecordsArray) {
+        let patientId = element.substring(0, element.indexOf("\t"));
+        expect(patientId, "Patient ID is not an 8 digit number").toEqual(
+          expect.stringMatching(regularExpression)
+        );
+      }
+    } else {
+      console.log("No patient records available");
+    }
+  }
+
+  async validateNameFormat() {
+    if (await this.validatePatientRecordsAvailable()) {
+      let tableData = await this.patientTable.innerText();
+      let allRecordsArray = tableData.split("\n");
+      allRecordsArray.splice(0, 1);
+      let expectedName =
+        this.randomLastName +
+        ", " +
+        this.randomFirstName +
+        " " +
+        this.randomMiddleName[0];
+      let removeMRN = allRecordsArray[0].substring(9);
+      let name = removeMRN.substring(0, removeMRN.indexOf("\t"));
+      expect(name, "Name format is not as expected").toEqual(
+        expect.stringMatching(expectedName)
+      );
+    } else {
+      console.log("No patient records available");
+    }
+  }
+
+  async validateDOBFormat() {
+    if (await this.validatePatientRecordsAvailable()) {
+      let listOfDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+      let flag = true;
+      let pageCount = await this.pageNumberCount.innerText();
+      for (let count = Number(pageCount); count > 0; count = count - 1) {
+        let tableData = await this.patientTable.innerText();
+        let allRecordsArray = tableData.split("\n");
+        allRecordsArray.splice(0, 1);
+        for (const element of allRecordsArray) {
+          let removeRank = element.substring(0, element.lastIndexOf("\t"));
+          let dateOfBirth = removeRank.substring(removeRank.lastIndexOf("\t"));
+          let dateOfBirthArray = dateOfBirth.split("/");
+          let month = parseInt(dateOfBirthArray[0]);
+          let day = parseInt(dateOfBirthArray[1]);
+          let year = parseInt(dateOfBirthArray[2]);
+          if (month != 2) {
+            if (day > listOfDays[month - 1]) {
+              flag = false;
+            }
+            if (month > 12) {
+              flag = false;
+            }
+          } else if (month == 2) {
+            let leapYear = false;
+            if ((!(year % 4) && year % 100) || !(year % 400)) {
+              leapYear = true;
+            }
+            if (leapYear == false && day >= 29) {
+              flag = false;
+            } else if (leapYear == true && day > 29) {
+              flag = false;
+            }
+          }
+        }
+        expect(flag, "DOB format is not MM/DD/YYYY").toBeTruthy();
+        await this.nextPage.click();
+        await this.page.waitForTimeout(2000);
+      }
+    } else {
+      console.log("No patient records available");
+    }
+  }
+
+  async validateCreateButtonIsEnabled() {
+    expect(
+      await this.createButton.isEnabled(),
+      "Create button is not enabled"
+    ).toBeTruthy();
+  }
+
+  async validateRankMoreThanThreshold() {
+    if (await this.validatePatientRecordsAvailable()) {
+      let pageCount = await this.pageNumberCount.innerText();
+      for (let count = Number(pageCount); count > 0; count = count - 1) {
+        let tableData = await this.patientTable.innerText();
+        let allRecordsArray = tableData.split("\n");
+        allRecordsArray.splice(0, 1);
+        for (const element of allRecordsArray) {
+          let indexForMatchScore = element.lastIndexOf("\t");
+          let rank = element.substring(indexForMatchScore + 1);
+          console.log(rank);
+          expect(
+            parseFloat(rank),
+            "Match score is less than 0.1"
+          ).toBeGreaterThanOrEqual(0.4);
+        }
+        await this.nextPage.click();
+        await this.page.waitForTimeout(2000);
+      }
+    } else {
+      console.log("No patient records available");
+    }
+  }
+
+  async validatePossibleMatchesHelpTextDisplayed() {
+    await this.possibleMatchesHelpText.waitFor();
+    expect(
+      await this.possibleMatchesHelpText.isVisible(),
+      "Possible matches help text is not displayed"
+    ).toBeTruthy();
   }
 }

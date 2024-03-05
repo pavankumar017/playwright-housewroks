@@ -158,22 +158,6 @@ test("User should be able to use the pagination", async ({ page, baseURL }) => {
   await createPatient.validatePagination();
 });
 
-test("User should get search result with relevant patients record at top before creating", async ({
-  page,
-  baseURL,
-}) => {
-  await page.goto(`${baseURL}`);
-  const patientMaster = new PatientMaster(page);
-  await patientMaster.clickOnCreateButton();
-  const createPatient = new CreatePatient(page);
-  const sideMenu = new SideMenu(page);
-  await sideMenu.openCreateFromSideMenu();
-  await createPatient.enterFirstNameProvided("patient");
-  await createPatient.enterDOBProvided("01/01/2024");
-  await createPatient.clickOnCheckButton();
-  await createPatient.validateDefaultSort();
-});
-
 test("User should get error message on entering more than 64 character on first name", async ({
   page,
   baseURL,
@@ -495,4 +479,185 @@ test("User should be able to see all the columns for possible matches table", as
   await createPatient.enterMiddleNameProvided("test");
   await createPatient.clickOnCheckButton();
   await createPatient.validateColumnsOfPossibleMatchesTable();
+});
+
+test("Patient ID should be displayed as 8 digit number", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterFirstNameProvided("test");
+  await createPatient.clickOnCheckButton();
+  await createPatient.validatePatientIDFormat();
+});
+
+test("Name format should be as expected", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterFirstName();
+  await createPatient.enterMiddleName();
+  await createPatient.enterLastName();
+  await createPatient.selectDateOfBirth();
+  await createPatient.selectSexValueProvided("Male");
+  await createPatient.selectDiseaseTypeProvided("Cancer");
+  await createPatient.selectAffectedOrganProvided("Stomach");
+  await createPatient.enterDataIntoOptionalFields();
+  await createPatient.clickOnCheckButton();
+  await createPatient.waitTillCreateButtonEnabled();
+  await createPatient.clickOnCreateButton();
+  await createPatient.validateSuccessfulCreation();
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openCreateFromSideMenu();
+  await createPatient.enterFirstName();
+  await createPatient.enterMiddleName();
+  await createPatient.enterLastName();
+  await createPatient.selectDateOfBirth();
+  await createPatient.selectSexValueProvided("Male");
+  await createPatient.selectDiseaseTypeProvided("Cancer");
+  await createPatient.selectAffectedOrganProvided("Stomach");
+  await createPatient.clickOnCheckButton();
+  await createPatient.validateNameFormat();
+});
+
+test("DOB should be displayed in DD/MM/YYYY", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterFirstNameProvided("test");
+  await createPatient.clickOnCheckButton();
+  await createPatient.validateDOBFormat();
+});
+
+test("User should get search result with relevant patients record at top before creating", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openCreateFromSideMenu();
+  await createPatient.enterFirstNameProvided("patient");
+  await createPatient.enterDOBProvided("01/01/2024");
+  await createPatient.clickOnCheckButton();
+  await createPatient.validateDefaultSort();
+});
+
+test("Create button should be enabled immediately when sex is selected", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openCreateFromSideMenu();
+  await createPatient.selectSexValue();
+  await createPatient.clickOnCheckButton();
+  await createPatient.validateCreateButtonIsEnabled();
+});
+
+test("All possible matches should have more than 0.1 match score", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openCreateFromSideMenu();
+  await createPatient.enterFirstNameProvided("test");
+  await createPatient.clickOnCheckButton();
+  await createPatient.validateRankMoreThanThreshold();
+});
+
+test("Patient table should disappear on click clear button", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openCreateFromSideMenu();
+  await createPatient.enterDataIntoMandatoryFields();
+  await createPatient.enterDataIntoOptionalFields();
+  await createPatient.clickOnCheckButton();
+  await createPatient.clickOnClearButton();
+  await createPatient.validatePossibleMatchesHelpTextDisplayed();
+});
+
+test("Create patient side menu should be displayed under Patients", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.validateCreatePatientDisplayedUnderPatients();
+});
+
+test("Title of patients side menu should be 'PATIENTS'", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.validateSideMenuPatientsTitle();
+});
+
+test("Background color of clear button should be white", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.validateBackgroundColorOfClearButton();
+});
+
+test("Background color of check button when disabled should be grey", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.validateBackgroundColorOfDisabledCheckButton();
+});
+
+test.skip("Background color of check button should be blue", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterMiddleName();
+  await createPatient.validateBackgroundColorOfCheckButton();
+});
+
+test.skip("Background color of create button when disabled should be grey", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterMiddleName();
+  await createPatient.clickOnCheckButton();
+  await createPatient.validateBackgroundColorOfDisabledCreateButton();
 });
