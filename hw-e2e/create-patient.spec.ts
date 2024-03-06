@@ -149,8 +149,6 @@ test("User should be able to use the pagination", async ({ page, baseURL }) => {
   const patientMaster = new PatientMaster(page);
   await patientMaster.clickOnCreateButton();
   const createPatient = new CreatePatient(page);
-  const sideMenu = new SideMenu(page);
-  await sideMenu.openCreateFromSideMenu();
   await createPatient.enterFirstNameProvided("test");
   await createPatient.enterLastNameProvided("test");
   await createPatient.enterDOBProvided("01/01/2024");
@@ -542,8 +540,6 @@ test("User should get search result with relevant patients record at top before 
   const patientMaster = new PatientMaster(page);
   await patientMaster.clickOnCreateButton();
   const createPatient = new CreatePatient(page);
-  const sideMenu = new SideMenu(page);
-  await sideMenu.openCreateFromSideMenu();
   await createPatient.enterFirstNameProvided("patient");
   await createPatient.enterDOBProvided("01/01/2024");
   await createPatient.clickOnCheckButton();
@@ -558,8 +554,6 @@ test("Create button should be enabled immediately when sex is selected", async (
   const patientMaster = new PatientMaster(page);
   await patientMaster.clickOnCreateButton();
   const createPatient = new CreatePatient(page);
-  const sideMenu = new SideMenu(page);
-  await sideMenu.openCreateFromSideMenu();
   await createPatient.selectSexValue();
   await createPatient.clickOnCheckButton();
   await createPatient.validateCreateButtonIsEnabled();
@@ -573,8 +567,6 @@ test("All possible matches should have more than 0.1 match score", async ({
   const patientMaster = new PatientMaster(page);
   await patientMaster.clickOnCreateButton();
   const createPatient = new CreatePatient(page);
-  const sideMenu = new SideMenu(page);
-  await sideMenu.openCreateFromSideMenu();
   await createPatient.enterFirstNameProvided("test");
   await createPatient.clickOnCheckButton();
   await createPatient.validateRankMoreThanThreshold();
@@ -588,13 +580,59 @@ test("Patient table should disappear on click clear button", async ({
   const patientMaster = new PatientMaster(page);
   await patientMaster.clickOnCreateButton();
   const createPatient = new CreatePatient(page);
-  const sideMenu = new SideMenu(page);
-  await sideMenu.openCreateFromSideMenu();
   await createPatient.enterDataIntoMandatoryFields();
   await createPatient.enterDataIntoOptionalFields();
   await createPatient.clickOnCheckButton();
   await createPatient.clickOnClearButton();
   await createPatient.validatePossibleMatchesHelpTextDisplayed();
+});
+
+test("Mandatory mark should disappear on click clear button", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterDataIntoMandatoryFields();
+  await createPatient.enterDataIntoOptionalFields();
+  await createPatient.clickOnCheckButton();
+  await createPatient.validateMandatoryMark();
+  await createPatient.clickOnClearButton();
+  await createPatient.validateNoMandatoryMark();
+});
+
+test("Latest created patient should be displayed at the top in patient master", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterDataIntoMandatoryFields();
+  await createPatient.enterDataIntoOptionalFields();
+  await createPatient.clickOnCheckButton();
+  await createPatient.clickOnCreateButton();
+  await patientMaster.validateLatestCreatedAtTop(
+    createPatient.randomFirstName,
+    createPatient.randomMiddleName,
+    createPatient.randomLastName
+  );
+});
+
+test("On click next page active page should change to next page", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterDOBProvided("02/07/2024");
+  await createPatient.clickOnCheckButton();
+  await createPatient.changeAndValidateActivePage();
 });
 
 test("Create patient side menu should be displayed under Patients", async ({

@@ -858,4 +858,32 @@ export class CreatePatient {
       "Possible matches help text is not displayed"
     ).toBeTruthy();
   }
+
+  async validateNoMandatoryMark() {
+    let actualListOfMandatoryFields = await this.page
+      .locator("[class='ant-form-item-required']")
+      .allTextContents();
+    expect(
+      actualListOfMandatoryFields.length,
+      "Mandatory mark is present on few field(s)"
+    ).toEqual(0);
+  }
+
+  async changeAndValidateActivePage() {
+    if (await this.validatePatientRecordsAvailable()) {
+      await this.nextPage.waitFor();
+      if (!this.nextPage.isEnabled()) {
+        console.log("Result contains only one page");
+      } else {
+        let activePageNumberValue = await this.activePageNumber.innerText();
+        expect(activePageNumberValue, "First page is not active").toBe("1");
+        await this.nextPage.click();
+        await this.page.waitForTimeout(2000);
+        activePageNumberValue = await this.activePageNumber.innerText();
+        expect(activePageNumberValue, "First page is not active").toBe("2");
+      }
+    } else {
+      console.log("No patient records available");
+    }
+  }
 }

@@ -6,6 +6,7 @@ export class PatientMaster {
   readonly closePatientMaster: Locator;
   readonly searchField: Locator;
   readonly table: Locator;
+  readonly patientTable: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -14,6 +15,9 @@ export class PatientMaster {
     this.searchField = this.page.getByTestId("search-filter-input");
     this.table = this.page.locator(
       "(//*[@class='table-wrapper'])/div/div/div/div/div/div/table"
+    );
+    this.patientTable = this.page.locator(
+      "(//*[@class='ant-table-content'])/table"
     );
   }
 
@@ -30,5 +34,22 @@ export class PatientMaster {
 
   async clickOnCreateButton() {
     await this.createButton.click();
+  }
+
+  async validateLatestCreatedAtTop(
+    firstName: string,
+    middleName: string,
+    lastName: string
+  ) {
+    let tableData = await this.patientTable.innerText();
+    let allRecordsArray = tableData.split("\n");
+    allRecordsArray.splice(0, 4);
+    let expectedName = lastName + ", " + firstName + " " + middleName[0];
+    let firstRecord = allRecordsArray[0].split("\t");
+    let name = firstRecord[1];
+    expect(
+      name,
+      "Created patient is not displayed at the top of patient master"
+    ).toEqual(expect.stringMatching(expectedName));
   }
 }
