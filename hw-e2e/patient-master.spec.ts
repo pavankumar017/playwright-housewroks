@@ -1,7 +1,7 @@
 import { test } from "@playwright/test";
 import { PatientMaster } from "../locators/patient-master";
 
-test("Test to verify patient Master page is displyed", async ({
+test("Test to verify patient Master page is displayed", async ({
   page,
   baseURL,
 }) => {
@@ -29,7 +29,7 @@ test("Test to verify search invalid patient", async ({ page, baseURL }) => {
   await patientMaster.verifyNoDataFound();
 });
 
-test("Test to validate list of criterias", async ({ page, baseURL }) => {
+test("Test to validate list of criteria", async ({ page, baseURL }) => {
   await page.goto(`${baseURL}`);
   const patientMaster = new PatientMaster(page);
   await patientMaster.clickOnFilters();

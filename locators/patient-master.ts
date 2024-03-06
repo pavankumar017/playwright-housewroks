@@ -41,9 +41,6 @@ export class PatientMaster {
   }
   async validateCreatedPatient(text: string) {
     await this.searchField.fill(text);
-    // await this.page.waitForSelector(
-    //   "//tbody[@class ='ant-table-tbody']/child::tr/td[2]"
-    // );
     await this.searchResult.waitFor();
     let tableData = await this.table.innerText();
     expect(tableData).toContain(text);
@@ -134,7 +131,6 @@ export class PatientMaster {
         .textContent();
       expect(currentValues).toEqual(organDropDownValues[i - 1]);
       await this.page.keyboard.press("ArrowDown");
-      // await this.page.keyboardpress("Enter");
     }
   }
 }
