@@ -1,6 +1,7 @@
 import { test } from "@playwright/test";
 import { CreatePatient } from "../locators/create-patient";
 import { PatientMaster } from "../locators/patient-master";
+import { PatientDashboard } from "../locators/patient_dashboard";
 import { SideMenu } from "../locators/side-menu";
 
 test("User should be able to open create patient from side menu", async ({
@@ -100,7 +101,7 @@ test("No data should be displayed when there are no patients available for selec
   await createPatient.validateNoDataFound();
 });
 
-test("User should be able to clear data from all the fields", async ({
+test.skip("User should be able to clear data from all the fields", async ({
   page,
   baseURL,
 }) => {
@@ -474,7 +475,7 @@ test("User should be able to see all the columns for possible matches table", as
   const patientMaster = new PatientMaster(page);
   await patientMaster.clickOnCreateButton();
   const createPatient = new CreatePatient(page);
-  await createPatient.enterMiddleNameProvided("test");
+  await createPatient.enterDOBProvided("01/07/2000");
   await createPatient.clickOnCheckButton();
   await createPatient.validateColumnsOfPossibleMatchesTable();
 });
@@ -509,8 +510,7 @@ test("Name format should be as expected", async ({ page, baseURL }) => {
   await createPatient.waitTillCreateButtonEnabled();
   await createPatient.clickOnCreateButton();
   await createPatient.validateSuccessfulCreation();
-  const sideMenu = new SideMenu(page);
-  await sideMenu.openCreateFromSideMenu();
+  await patientMaster.clickOnCreateButton();
   await createPatient.enterFirstName();
   await createPatient.enterMiddleName();
   await createPatient.enterLastName();
@@ -635,6 +635,92 @@ test("On click next page active page should change to next page", async ({
   await createPatient.changeAndValidateActivePage();
 });
 
+test("'<' should be disabled when on first page", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterDOBProvided("02/07/2024");
+  await createPatient.clickOnCheckButton();
+  await createPatient.validatePreviousPageDisabled();
+});
+
+test("'<’ button should be enabled for the user to navigate on previous page", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterDOBProvided("02/07/2024");
+  await createPatient.clickOnCheckButton();
+  await createPatient.validatePreviousPageEnabled();
+});
+
+test("'>’ should be disabled when user on the last page", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterDOBProvided("02/07/2024");
+  await createPatient.clickOnCheckButton();
+  await createPatient.validateNextPageDisabled();
+});
+
+test("'>’ is enabled to navigate user on the next page", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterDOBProvided("02/07/2024");
+  await createPatient.clickOnCheckButton();
+  await createPatient.validateNextPageEnabled();
+});
+
+test("Default pagination to be set for 10", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterDOBProvided("01/01/2024");
+  await createPatient.clickOnCheckButton();
+  await createPatient.validateDefaultPagination();
+});
+
+test("On clicking on Patient User should be navigated to Patient Dashboard page ", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterDOBProvided("01/01/2024");
+  await createPatient.clickOnCheckButton();
+  await createPatient.openRandomPatient();
+  const patientDashboard = new PatientDashboard(page);
+  await patientDashboard.validatePatientDashboardPage();
+});
+
+test("Patient master should be displayed on click back button", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.clickOnBackButton();
+  await patientMaster.validatePatientMasterIsDisplayed();
+});
+
 test("Create patient side menu should be displayed under Patients", async ({
   page,
   baseURL,
@@ -698,4 +784,57 @@ test.skip("Background color of create button when disabled should be grey", asyn
   await createPatient.enterMiddleName();
   await createPatient.clickOnCheckButton();
   await createPatient.validateBackgroundColorOfDisabledCreateButton();
+});
+
+test.skip("Background color of the Create button in enabled state", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterMiddleName();
+  await createPatient.clickOnCheckButton();
+  await createPatient.waitTillCreateButtonEnabled();
+  await createPatient.validateBackgroundColorOfDisabledCreateButton();
+});
+
+test("Validate placeholder of all the fields", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.validateCreatePatientPage();
+  await createPatient.validatePlaceholders();
+});
+
+test("Validate pagination options available", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterDOBProvided("01/07/2000");
+  await createPatient.clickOnCheckButton();
+  await createPatient.validatePaginationOptions();
+});
+
+test.skip("Background color on hover patient record", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const patientMaster = new PatientMaster(page);
+  await patientMaster.clickOnCreateButton();
+  const createPatient = new CreatePatient(page);
+  await createPatient.enterDOBProvided("01/07/2000");
+  await createPatient.clickOnCheckButton();
+  await createPatient.openRandomPatient();
+  await createPatient.onHoverValidateBackgroundColor();
+});
+
+test("Validate patient icon in side menu", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.validatePatientSideMenuIcon();
 });

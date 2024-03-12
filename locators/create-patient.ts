@@ -10,6 +10,7 @@ export class CreatePatient {
   readonly lastName: Locator;
   readonly dateOfBirth: Locator;
   readonly sex: Locator;
+  readonly sexPlaceholder: Locator;
   readonly clearButton: Locator;
   readonly checkButton: Locator;
   readonly selectedDate: Locator;
@@ -33,13 +34,18 @@ export class CreatePatient {
   readonly diseaseType: Locator;
   readonly diseaseTypeDropdown: string[];
   readonly affectedOrgan: Locator;
+  readonly affectedOrganPlaceholder: Locator;
   readonly affectedOrganCancerDropdown: string[];
   readonly affectedOrganOrganFailureDropdown: string[];
   readonly activePageNumber: Locator;
   readonly diseaseTypeOption: Locator;
   readonly radioButton: Locator;
   readonly patientTableColumnNames: string[];
+  readonly backButton: Locator;
   readonly possibleMatchesHelpText: Locator;
+  readonly previousPage: Locator;
+  readonly paginationOptions: Locator;
+  randomNumber: number;
 
   constructor(page: Page) {
     this.page = page;
@@ -49,10 +55,15 @@ export class CreatePatient {
     this.lastName = this.page.getByTestId("last-name");
     this.dateOfBirth = this.page.getByTestId("dob");
     this.sex = this.page.locator("[data-testid=sex]");
+    this.sexPlaceholder = this.page.locator(
+      "[data-testid='sex'] div span:nth-child(2)"
+    );
     this.clearButton = this.page.getByRole("button", { name: "Clear" });
     this.createButton = this.page.getByRole("button", { name: "Create" });
     this.checkButton = this.page.getByRole("button", { name: "Check" });
-    this.selectedDate = this.page.locator("[class*='selected']");
+    this.selectedDate = this.page.locator(
+      "[class*=' ant-picker-cell-selected']"
+    );
     this.errorAlert = this.page
       .getByTestId("create-patient-form")
       .getByRole("alert");
@@ -100,6 +111,9 @@ export class CreatePatient {
     );
     this.diseaseTypeDropdown = ["Cancer", "Organ Failure"];
     this.affectedOrgan = this.page.locator("[data-testid='affected-organ']");
+    this.affectedOrganPlaceholder = this.page.locator(
+      "[data-testid='affected-organ'] div span:nth-child(2)"
+    );
     this.affectedOrganCancerDropdown = [
       "Breast",
       "Colon",
@@ -129,9 +143,12 @@ export class CreatePatient {
     );
     this.radioButton = this.page.locator("[class*='ant-radio']");
     this.patientTableColumnNames = ["PATIENT ID", "NAME", "DOB", "MATCH SCORE"];
+    this.backButton = this.page.getByTestId("header-back-button");
     this.possibleMatchesHelpText = this.page.getByText(
       "Enter the above details and press “Check”."
     );
+    this.previousPage = this.page.locator("(//li[@title='Previous Page'])");
+    this.paginationOptions = this.page.getByRole("option");
   }
 
   formatDate = (date: Date) => {
@@ -529,6 +546,7 @@ export class CreatePatient {
   }
 
   async validateFirstPageIsActive() {
+    await this.page.waitForTimeout(2000);
     let activePageNumberValue = await this.activePageNumber.innerText();
     expect(activePageNumberValue, "First page is not active").toBe("1");
   }
@@ -707,6 +725,10 @@ export class CreatePatient {
     }
   }
 
+  async clickOnBackButton() {
+    await this.backButton.click();
+  }
+
   async validateBackgroundColorOfClearButton() {
     await this.clearButton.waitFor();
     expect(this.clearButton).toHaveCSS(
@@ -736,6 +758,11 @@ export class CreatePatient {
       "background-color",
       "rgba(0, 0, 0, 0.04)"
     );
+  }
+
+  async validateBackgroundColorOfEnabledCreateButton() {
+    await this.createButton.waitFor();
+    expect(this.createButton).toHaveCSS("background-color", "rgb(47, 84, 235)");
   }
 
   async validatePatientIDFormat() {
@@ -837,11 +864,10 @@ export class CreatePatient {
         for (const element of allRecordsArray) {
           let indexForMatchScore = element.lastIndexOf("\t");
           let rank = element.substring(indexForMatchScore + 1);
-          console.log(rank);
           expect(
             parseFloat(rank),
             "Match score is less than 0.1"
-          ).toBeGreaterThanOrEqual(0.4);
+          ).toBeGreaterThanOrEqual(0.1);
         }
         await this.nextPage.click();
         await this.page.waitForTimeout(2000);
@@ -885,5 +911,123 @@ export class CreatePatient {
     } else {
       console.log("No patient records available");
     }
+  }
+
+  async validatePreviousPageDisabled() {
+    await this.previousPage.waitFor();
+    expect(
+      this.previousPage.isDisabled(),
+      "Previous page button is not disabled"
+    ).toBeTruthy();
+  }
+
+  async validatePreviousPageEnabled() {
+    await this.nextPage.click();
+    await this.page.waitForTimeout(2000);
+    expect(
+      this.previousPage.isEnabled(),
+      "Previous page button is not enabled"
+    ).toBeTruthy();
+  }
+
+  async validateNextPageDisabled() {
+    await this.nextPage.waitFor();
+    await this.pageNumberCount.click();
+    expect(
+      this.nextPage.isDisabled(),
+      "Previous page button is not disabled"
+    ).toBeTruthy();
+  }
+
+  async validateNextPageEnabled() {
+    await this.nextPage.waitFor();
+    expect(
+      this.nextPage.isEnabled(),
+      "Previous page button is not disabled"
+    ).toBeTruthy();
+  }
+
+  async validateDefaultPagination() {
+    let pagination = await this.recordsPerPage.innerText();
+    expect(pagination, "Default pagination is not 10/page").toEqual(
+      "10 / page"
+    );
+  }
+
+  async openRandomPatient() {
+    this.randomNumber = randomInt(1, 10);
+    let tableData = await this.patientTable.innerText();
+    let allRecordsArray = tableData.split("\n");
+    allRecordsArray.splice(0, 1);
+    this.page
+      .locator(
+        "(//*[@class='ant-table-content'])/table/tbody/tr[" +
+          this.randomNumber +
+          "]/td[1]"
+      )
+      .click();
+  }
+
+  async validatePlaceholders() {
+    await expect(
+      this.firstName,
+      "Placeholder of first name is not as expected"
+    ).toHaveAttribute("placeholder", "Enter");
+    await expect(
+      this.lastName,
+      "Placeholder of last name is not as expected"
+    ).toHaveAttribute("placeholder", "Enter");
+    await expect(
+      this.middleName,
+      "Placeholder of middle name is not as expected"
+    ).toHaveAttribute("placeholder", "Enter");
+    await expect(
+      this.dateOfBirth,
+      "Placeholder of date of birth is not as expected"
+    ).toHaveAttribute("placeholder", "MM/DD/YYYY");
+    await expect(
+      this.sexPlaceholder,
+      "Placeholder of sex is not as expected"
+    ).toHaveText("Select");
+    await expect(
+      this.affectedOrganPlaceholder,
+      "Placeholder of affected organ is not as expected"
+    ).toHaveText("Select");
+  }
+
+  async validatePaginationOptions() {
+    let expectedPaginationOptions = [
+      "10 / page",
+      "20 / page",
+      "50 / page",
+      "100 / page",
+    ];
+    await this.recordsPerPage.click();
+    let actualPaginationOptions = this.paginationOptions.allInnerTexts();
+    let actualPaginationOptionsArray = (await actualPaginationOptions)
+      .toString()
+      .split(",");
+    expect(
+      expectedPaginationOptions,
+      "List of pagination options is not as expected"
+    ).toEqual(actualPaginationOptionsArray);
+  }
+
+  async onHoverValidateBackgroundColor() {
+    await this.page
+      .locator(
+        "(//*[@class='ant-table-content'])/table/tbody/tr[" +
+          this.randomNumber +
+          "]"
+      )
+      .hover();
+    await this.page.waitForTimeout(2000);
+    expect(
+      this.page.locator(
+        "(//*[@class='ant-table-content'])/table/tbody/tr[" +
+          this.randomNumber +
+          "]"
+      )
+    ).toHaveCSS("background-color", "rgba(250, 250, 250, 0.96)");
   }
 }

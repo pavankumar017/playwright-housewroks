@@ -52,4 +52,12 @@ export class PatientMaster {
       "Created patient is not displayed at the top of patient master"
     ).toEqual(expect.stringMatching(expectedName));
   }
+
+  async validatePatientMasterIsDisplayed() {
+    await this.createButton.waitFor();
+    expect(
+      await this.createButton.isVisible(),
+      "Patient Master is not visible"
+    ).toBeTruthy();
+  }
 }

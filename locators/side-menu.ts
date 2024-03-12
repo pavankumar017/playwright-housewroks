@@ -6,6 +6,7 @@ export class SideMenu {
   readonly createPatient: Locator;
   readonly patientMaster: Locator;
   readonly patientsSideMenu: Locator;
+  readonly patientMenuIcon: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -13,6 +14,7 @@ export class SideMenu {
     this.createPatient = this.page.locator("[href='/patients/add']");
     this.patientMaster = this.page.locator("[href='/patients']");
     this.patientsSideMenu = this.page.getByText("PATIENTS");
+    this.patientMenuIcon = this.page.getByTestId("patients-menu-icon");
   }
 
   async openCreateFromSideMenu() {
@@ -35,5 +37,19 @@ export class SideMenu {
       await this.patientsSideMenu.isVisible(),
       "Title for patients side menu is incorrect"
     ).toBeTruthy();
+  }
+
+  async validatePatientSideMenuIcon() {
+    await this.patientMenuIcon.waitFor();
+    expect(
+      this.patientMenuIcon,
+      "Patient menu icon is not displayed"
+    ).toBeVisible();
+  }
+
+  async openPatientMaster() {
+    await this.patient.hover();
+    await this.patientMaster.waitFor();
+    await this.patientMaster.click();
   }
 }
