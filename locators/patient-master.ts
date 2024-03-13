@@ -25,6 +25,7 @@ export class PatientMaster {
     );
     this.patientTable = this.page.locator(
       "(//*[@class='ant-table-content'])/table"
+    );
     this.heading = this.page.getByText("Patient Master");
     this.search = this.page.locator("//*[@data-testid='search-filter-input']");
     this.searchResult = this.page.locator(
