@@ -6,6 +6,7 @@ export class PatientMaster {
   readonly closePatientMaster: Locator;
   readonly searchField: Locator;
   readonly table: Locator;
+  readonly patientTable: Locator;
   readonly heading: Locator;
   readonly search: Locator;
   readonly searchResult: Locator;
@@ -21,6 +22,9 @@ export class PatientMaster {
     this.searchField = this.page.getByTestId("search-filter-input");
     this.table = this.page.locator(
       "(//*[@class='table-wrapper'])/div/div/div/div/div/div/table"
+    );
+    this.patientTable = this.page.locator(
+      "(//*[@class='ant-table-content'])/table"
     );
     this.heading = this.page.getByText("Patient Master");
     this.search = this.page.locator("//*[@data-testid='search-filter-input']");
@@ -132,5 +136,30 @@ export class PatientMaster {
       expect(currentValues).toEqual(organDropDownValues[i - 1]);
       await this.page.keyboard.press("ArrowDown");
     }
+  }
+
+  async validateLatestCreatedAtTop(
+    firstName: string,
+    middleName: string,
+    lastName: string
+  ) {
+    let tableData = await this.patientTable.innerText();
+    let allRecordsArray = tableData.split("\n");
+    allRecordsArray.splice(0, 4);
+    let expectedName = lastName + ", " + firstName + " " + middleName[0];
+    let firstRecord = allRecordsArray[0].split("\t");
+    let name = firstRecord[1];
+    expect(
+      name,
+      "Created patient is not displayed at the top of patient master"
+    ).toEqual(expect.stringMatching(expectedName));
+  }
+
+  async validatePatientMasterIsDisplayed() {
+    await this.createButton.waitFor();
+    expect(
+      await this.createButton.isVisible(),
+      "Patient Master is not visible"
+    ).toBeTruthy();
   }
 }

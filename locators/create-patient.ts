@@ -5,10 +5,12 @@ import { names, uniqueNamesGenerator } from "unique-names-generator";
 export class CreatePatient {
   readonly page: Page;
   readonly firstName: Locator;
+  readonly mandatoryMark: Locator;
   readonly middleName: Locator;
   readonly lastName: Locator;
   readonly dateOfBirth: Locator;
   readonly sex: Locator;
+  readonly sexPlaceholder: Locator;
   readonly clearButton: Locator;
   readonly checkButton: Locator;
   readonly selectedDate: Locator;
@@ -32,20 +34,36 @@ export class CreatePatient {
   readonly diseaseType: Locator;
   readonly diseaseTypeDropdown: string[];
   readonly affectedOrgan: Locator;
+  readonly affectedOrganPlaceholder: Locator;
   readonly affectedOrganCancerDropdown: string[];
   readonly affectedOrganOrganFailureDropdown: string[];
+  readonly activePageNumber: Locator;
+  readonly diseaseTypeOption: Locator;
+  readonly radioButton: Locator;
+  readonly patientTableColumnNames: string[];
+  readonly backButton: Locator;
+  readonly possibleMatchesHelpText: Locator;
+  readonly previousPage: Locator;
+  readonly paginationOptions: Locator;
+  randomNumber: number;
 
   constructor(page: Page) {
     this.page = page;
     this.firstName = this.page.getByTestId("first-name");
+    this.mandatoryMark = this.page.locator("[class='ant-form-item-required']");
     this.middleName = this.page.getByTestId("middle-name");
     this.lastName = this.page.getByTestId("last-name");
     this.dateOfBirth = this.page.getByTestId("dob");
     this.sex = this.page.locator("[data-testid=sex]");
+    this.sexPlaceholder = this.page.locator(
+      "[data-testid='sex'] div span:nth-child(2)"
+    );
     this.clearButton = this.page.getByRole("button", { name: "Clear" });
     this.createButton = this.page.getByRole("button", { name: "Create" });
     this.checkButton = this.page.getByRole("button", { name: "Check" });
-    this.selectedDate = this.page.locator("[class*='selected']");
+    this.selectedDate = this.page.locator(
+      "[class*=' ant-picker-cell-selected']"
+    );
     this.errorAlert = this.page
       .getByTestId("create-patient-form")
       .getByRole("alert");
@@ -88,8 +106,14 @@ export class CreatePatient {
     );
     this.sexDropdown = ["Male", "Female", "Other", "Choose not to answer"];
     this.diseaseType = this.page.getByTestId("disease-type");
+    this.diseaseTypeOption = this.page.locator(
+      "[data-testid='disease-type'] label"
+    );
     this.diseaseTypeDropdown = ["Cancer", "Organ Failure"];
     this.affectedOrgan = this.page.locator("[data-testid='affected-organ']");
+    this.affectedOrganPlaceholder = this.page.locator(
+      "[data-testid='affected-organ'] div span:nth-child(2)"
+    );
     this.affectedOrganCancerDropdown = [
       "Breast",
       "Colon",
@@ -105,7 +129,7 @@ export class CreatePatient {
       "Thyroid",
       "Melanoma",
       "Biliary",
-      "Duodenal]",
+      "Duodenal",
     ];
     this.affectedOrganOrganFailureDropdown = [
       "Kidney",
@@ -114,6 +138,17 @@ export class CreatePatient {
       "Heart",
       "Lung",
     ];
+    this.activePageNumber = this.page.locator(
+      "[class*='ant-pagination-item-active']"
+    );
+    this.radioButton = this.page.locator("[class*='ant-radio']");
+    this.patientTableColumnNames = ["PATIENT ID", "NAME", "DOB", "MATCH SCORE"];
+    this.backButton = this.page.getByTestId("header-back-button");
+    this.possibleMatchesHelpText = this.page.getByText(
+      "Enter the above details and press “Check”."
+    );
+    this.previousPage = this.page.locator("(//li[@title='Previous Page'])");
+    this.paginationOptions = this.page.getByRole("option");
   }
 
   formatDate = (date: Date) => {
@@ -299,7 +334,7 @@ export class CreatePatient {
       for (let count = Number(pageCount); count > 0; count = count - 1) {
         let tableData = await this.patientTable.innerText();
         let allRecordsArray = tableData.split("\n");
-        allRecordsArray.splice(0, 12);
+        allRecordsArray.splice(0, 1);
         for (const element of allRecordsArray) {
           let indexForMatchScore = element.lastIndexOf("\t");
           let actualRankOrder = element.substring(indexForMatchScore + 1);
@@ -345,7 +380,6 @@ export class CreatePatient {
   }
 
   async validateCreatePatientPage() {
-    await this.page.waitForTimeout(5000);
     await expect(
       this.firstName,
       "Create patient form not visible"
@@ -385,20 +419,13 @@ export class CreatePatient {
     }
   }
 
-  async validateDOBSearchResult(expectedDateOfBirth: string) {
+  async validateDOBSearchResult(dateOfBirth: string) {
     if (await this.validatePatientRecordsAvailable()) {
       let pageCount = await this.pageNumberCount.innerText();
-      let date = expectedDateOfBirth.substring(
-        0,
-        expectedDateOfBirth.indexOf("/")
-      );
-      let month = expectedDateOfBirth.substring(
-        expectedDateOfBirth.indexOf("/") + 1,
-        expectedDateOfBirth.lastIndexOf("/")
-      );
-      let year = expectedDateOfBirth.substring(
-        expectedDateOfBirth.lastIndexOf("/") + 1
-      );
+      let expectedDateOfBirth = dateOfBirth.split("/");
+      let date = expectedDateOfBirth[0];
+      let month = expectedDateOfBirth[1];
+      let year = expectedDateOfBirth[2];
       let expectedDateOfBirthArray = [
         date,
         month,
@@ -492,7 +519,10 @@ export class CreatePatient {
 
   async validateNoDataFound() {
     await this.noDataAvailable.waitFor();
-    expect(await this.noDataAvailable.isVisible()).toBeTruthy();
+    expect(
+      await this.noDataAvailable,
+      "No data text is not visible"
+    ).toBeVisible();
   }
 
   async validateCheckButtonDisplayed() {
@@ -505,6 +535,499 @@ export class CreatePatient {
     let tableData = await this.patientTable.innerText();
     let allRecordsArray = tableData.split("\n");
     allRecordsArray.splice(0, 1);
-    console.log(allRecordsArray);
+    let rank = allRecordsArray[0]
+      .substring(allRecordsArray[0].lastIndexOf("\t"))
+      .trim();
+    expect(rank, "Rank is not 1 for exact match patient").toEqual("1");
+  }
+
+  async clickOnNextButton() {
+    await this.nextPage.click();
+  }
+
+  async validateFirstPageIsActive() {
+    await this.page.waitForTimeout(2000);
+    let activePageNumberValue = await this.activePageNumber.innerText();
+    expect(activePageNumberValue, "First page is not active").toBe("1");
+  }
+
+  async clearDOB() {
+    await this.page
+      .locator("(//*[@data-testid='dob'])/parent::div//span[2]")
+      .click();
+  }
+
+  async validateTotalItemsIsVisible() {
+    if (await this.validatePatientRecordsAvailable()) {
+      expect(this.totalItems, "Total items are not visible").toBeVisible();
+    } else {
+      console.log("No patient records available");
+    }
+  }
+
+  async validateUIFields() {
+    await expect(this.firstName, "First name is not visible").toBeVisible();
+    await expect(this.middleName, "Middle name is not visible").toBeVisible();
+    await expect(this.lastName, "Last name is not visible").toBeVisible();
+    await expect(this.dateOfBirth, "DOB is not visible").toBeVisible();
+    await expect(this.sex, "Sex is not visible").toBeVisible();
+    await expect(this.diseaseType, "Disease type is not visible").toBeVisible();
+    await expect(
+      this.affectedOrgan,
+      "Affected organ is not visible"
+    ).toBeVisible();
+  }
+
+  async validateMandatoryMark() {
+    await this.mandatoryMark.first().waitFor();
+    let expectedListOfMandatoryFields = [
+      "First Name",
+      "Last Name",
+      "DOB",
+      "Sex",
+      "Disease Type",
+      "Affected Organ",
+    ];
+    let actualListOfMandatoryFields = await this.page
+      .locator("[class='ant-form-item-required']")
+      .allTextContents();
+    expect(
+      actualListOfMandatoryFields,
+      "List of mandatory fields are incorrect"
+    ).toStrictEqual(expectedListOfMandatoryFields);
+  }
+
+  async validateDateFormat(expectedDate: string) {
+    expect(this.dateOfBirth, "DOB format is not MM/DD/YYYY").toHaveAttribute(
+      "title",
+      expectedDate
+    );
+  }
+
+  async verifyDiseaseTypeLabel() {
+    let diseaseType = this.page.locator("[title='Disease Type']");
+    await expect(diseaseType, "Disease Type label is incorrect").toHaveText(
+      "Disease Type"
+    );
+  }
+
+  async verifyDiseaseTypeOptions() {
+    for (let i = 0; i < this.diseaseTypeDropdown.length; i++) {
+      await expect(this.diseaseTypeOption.nth(i)).toHaveText(
+        this.diseaseTypeDropdown[i]
+      );
+    }
+  }
+
+  async verifyDiseaseTypeIsRadio() {
+    await expect(this.radioButton.first()).toHaveAttribute(
+      "data-testid",
+      "disease-type"
+    );
+  }
+
+  async verifyAffectedOrganLabel() {
+    let affectedOrgan = this.page.locator("[title='Affected Organ']");
+    await expect(affectedOrgan, "Affected Organ label is incorrect").toHaveText(
+      "Affected Organ"
+    );
+  }
+
+  async validateAffectedOrganValuesForCancer() {
+    let affectedOrganValuesForCancer = [""];
+    await this.affectedOrgan.click();
+    await this.affectedOrgan.press("Enter");
+    affectedOrganValuesForCancer.push(
+      await this.page
+        .locator(
+          "[data-testid='affected-organ'] span[class='ant-select-selection-item']"
+        )
+        .innerText()
+    );
+    for (let i = 0; i < this.affectedOrganCancerDropdown.length - 1; i++) {
+      await this.affectedOrgan.click();
+      await this.affectedOrgan.press("ArrowDown");
+      await this.affectedOrgan.press("Enter");
+      affectedOrganValuesForCancer.push(
+        await this.page
+          .locator(
+            "[data-testid='affected-organ'] span[class='ant-select-selection-item']"
+          )
+          .innerText()
+      );
+    }
+    affectedOrganValuesForCancer.shift();
+    expect(
+      affectedOrganValuesForCancer,
+      "List of affected organ values for Cancer is incorrect"
+    ).toEqual(this.affectedOrganCancerDropdown);
+  }
+
+  async validateAffectedOrganValuesForOrganFailure() {
+    let affectedOrganValuesForOrganFailure = [""];
+    await this.affectedOrgan.click();
+    await this.affectedOrgan.press("Enter");
+    affectedOrganValuesForOrganFailure.push(
+      await this.page
+        .locator(
+          "[data-testid='affected-organ'] span[class='ant-select-selection-item']"
+        )
+        .innerText()
+    );
+    for (
+      let i = 0;
+      i < this.affectedOrganOrganFailureDropdown.length - 1;
+      i++
+    ) {
+      await this.affectedOrgan.click();
+      await this.affectedOrgan.press("ArrowDown");
+      await this.affectedOrgan.press("Enter");
+      affectedOrganValuesForOrganFailure.push(
+        await this.page
+          .locator(
+            "[data-testid='affected-organ'] span[class='ant-select-selection-item']"
+          )
+          .innerText()
+      );
+    }
+    affectedOrganValuesForOrganFailure.shift();
+    expect(
+      affectedOrganValuesForOrganFailure,
+      "List of affected organ values for Organ Failure is incorrect"
+    ).toEqual(this.affectedOrganOrganFailureDropdown);
+  }
+
+  async validateAffectedOrganResets() {
+    expect(
+      await this.affectedOrgan.innerText(),
+      "Affected Organ value does not reset"
+    ).toEqual("Select");
+  }
+
+  async validateCreateButtonIsDisabled() {
+    expect(
+      await this.createButton.isDisabled(),
+      "Create Button is not disabled"
+    ).toBeTruthy();
+  }
+
+  async validateColumnsOfPossibleMatchesTable() {
+    if (await this.validatePatientRecordsAvailable()) {
+      let tableData = await this.patientTable.innerText();
+      let allRecordsArray = tableData.split("\n");
+      let columnNamesArray = allRecordsArray[0].split("\t");
+      expect(
+        this.patientTableColumnNames,
+        "Possible matches table columns are not as expected"
+      ).toEqual(columnNamesArray);
+    } else {
+      console.log("No patient records available");
+    }
+  }
+
+  async clickOnBackButton() {
+    await this.backButton.click();
+  }
+
+  async validateBackgroundColorOfClearButton() {
+    await this.clearButton.waitFor();
+    expect(this.clearButton).toHaveCSS(
+      "background-color",
+      "rgb(255, 255, 255)"
+    );
+  }
+
+  async validateBackgroundColorOfDisabledCheckButton() {
+    await this.checkButton.waitFor();
+    expect(this.checkButton).toHaveCSS(
+      "background-color",
+      "rgba(0, 0, 0, 0.04)"
+    );
+  }
+
+  async validateBackgroundColorOfCheckButton() {
+    await this.checkButton.waitFor();
+    expect(await this.checkButton.isEnabled()).toBeTruthy();
+    await this.page.waitForTimeout(2000);
+    expect(this.checkButton).toHaveCSS("background-color", "rgb(47, 84, 235)");
+  }
+
+  async validateBackgroundColorOfDisabledCreateButton() {
+    await this.createButton.waitFor();
+    expect(this.createButton).toHaveCSS(
+      "background-color",
+      "rgba(0, 0, 0, 0.04)"
+    );
+  }
+
+  async validateBackgroundColorOfEnabledCreateButton() {
+    await this.createButton.waitFor();
+    expect(this.createButton).toHaveCSS("background-color", "rgb(47, 84, 235)");
+  }
+
+  async validatePatientIDFormat() {
+    if (await this.validatePatientRecordsAvailable()) {
+      let tableData = await this.patientTable.innerText();
+      let allRecordsArray = tableData.split("\n");
+      allRecordsArray.splice(0, 1);
+      let regularExpression = "^[0-9]{8}$";
+      for (const element of allRecordsArray) {
+        let patientId = element.substring(0, element.indexOf("\t"));
+        expect(patientId, "Patient ID is not an 8 digit number").toEqual(
+          expect.stringMatching(regularExpression)
+        );
+      }
+    } else {
+      console.log("No patient records available");
+    }
+  }
+
+  async validateNameFormat() {
+    if (await this.validatePatientRecordsAvailable()) {
+      let tableData = await this.patientTable.innerText();
+      let allRecordsArray = tableData.split("\n");
+      allRecordsArray.splice(0, 1);
+      let expectedName =
+        this.randomLastName +
+        ", " +
+        this.randomFirstName +
+        " " +
+        this.randomMiddleName[0];
+      let removeMRN = allRecordsArray[0].substring(9);
+      let name = removeMRN.substring(0, removeMRN.indexOf("\t"));
+      expect(name, "Name format is not as expected").toEqual(
+        expect.stringMatching(expectedName)
+      );
+    } else {
+      console.log("No patient records available");
+    }
+  }
+
+  async validateDOBFormat() {
+    if (await this.validatePatientRecordsAvailable()) {
+      let listOfDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+      let flag = true;
+      let pageCount = await this.pageNumberCount.innerText();
+      for (let count = Number(pageCount); count > 0; count = count - 1) {
+        let tableData = await this.patientTable.innerText();
+        let allRecordsArray = tableData.split("\n");
+        allRecordsArray.splice(0, 1);
+        for (const element of allRecordsArray) {
+          let removeRank = element.substring(0, element.lastIndexOf("\t"));
+          let dateOfBirth = removeRank.substring(removeRank.lastIndexOf("\t"));
+          let dateOfBirthArray = dateOfBirth.split("/");
+          let month = parseInt(dateOfBirthArray[0]);
+          let day = parseInt(dateOfBirthArray[1]);
+          let year = parseInt(dateOfBirthArray[2]);
+          if (month != 2) {
+            if (day > listOfDays[month - 1]) {
+              flag = false;
+            }
+            if (month > 12) {
+              flag = false;
+            }
+          } else if (month == 2) {
+            let leapYear = false;
+            if ((!(year % 4) && year % 100) || !(year % 400)) {
+              leapYear = true;
+            }
+            if (leapYear == false && day >= 29) {
+              flag = false;
+            } else if (leapYear == true && day > 29) {
+              flag = false;
+            }
+          }
+        }
+        expect(flag, "DOB format is not MM/DD/YYYY").toBeTruthy();
+        await this.nextPage.click();
+        await this.page.waitForTimeout(2000);
+      }
+    } else {
+      console.log("No patient records available");
+    }
+  }
+
+  async validateCreateButtonIsEnabled() {
+    expect(
+      await this.createButton.isEnabled(),
+      "Create button is not enabled"
+    ).toBeTruthy();
+  }
+
+  async validateRankMoreThanThreshold() {
+    if (await this.validatePatientRecordsAvailable()) {
+      let pageCount = await this.pageNumberCount.innerText();
+      for (let count = Number(pageCount); count > 0; count = count - 1) {
+        let tableData = await this.patientTable.innerText();
+        let allRecordsArray = tableData.split("\n");
+        allRecordsArray.splice(0, 1);
+        for (const element of allRecordsArray) {
+          let indexForMatchScore = element.lastIndexOf("\t");
+          let rank = element.substring(indexForMatchScore + 1);
+          expect(
+            parseFloat(rank),
+            "Match score is less than 0.1"
+          ).toBeGreaterThanOrEqual(0.1);
+        }
+        await this.nextPage.click();
+        await this.page.waitForTimeout(2000);
+      }
+    } else {
+      console.log("No patient records available");
+    }
+  }
+
+  async validatePossibleMatchesHelpTextDisplayed() {
+    await this.possibleMatchesHelpText.waitFor();
+    expect(
+      await this.possibleMatchesHelpText.isVisible(),
+      "Possible matches help text is not displayed"
+    ).toBeTruthy();
+  }
+
+  async validateNoMandatoryMark() {
+    let actualListOfMandatoryFields = await this.page
+      .locator("[class='ant-form-item-required']")
+      .allTextContents();
+    expect(
+      actualListOfMandatoryFields.length,
+      "Mandatory mark is present on few field(s)"
+    ).toEqual(0);
+  }
+
+  async changeAndValidateActivePage() {
+    if (await this.validatePatientRecordsAvailable()) {
+      await this.nextPage.waitFor();
+      if (!this.nextPage.isEnabled()) {
+        console.log("Result contains only one page");
+      } else {
+        let activePageNumberValue = await this.activePageNumber.innerText();
+        expect(activePageNumberValue, "First page is not active").toBe("1");
+        await this.nextPage.click();
+        await this.page.waitForTimeout(2000);
+        activePageNumberValue = await this.activePageNumber.innerText();
+        expect(activePageNumberValue, "First page is not active").toBe("2");
+      }
+    } else {
+      console.log("No patient records available");
+    }
+  }
+
+  async validatePreviousPageDisabled() {
+    await this.previousPage.waitFor();
+    expect(
+      this.previousPage.isDisabled(),
+      "Previous page button is not disabled"
+    ).toBeTruthy();
+  }
+
+  async validatePreviousPageEnabled() {
+    await this.nextPage.click();
+    await this.page.waitForTimeout(2000);
+    expect(
+      this.previousPage.isEnabled(),
+      "Previous page button is not enabled"
+    ).toBeTruthy();
+  }
+
+  async validateNextPageDisabled() {
+    await this.nextPage.waitFor();
+    await this.pageNumberCount.click();
+    expect(
+      this.nextPage.isDisabled(),
+      "Previous page button is not disabled"
+    ).toBeTruthy();
+  }
+
+  async validateNextPageEnabled() {
+    await this.nextPage.waitFor();
+    expect(
+      this.nextPage.isEnabled(),
+      "Previous page button is not disabled"
+    ).toBeTruthy();
+  }
+
+  async validateDefaultPagination() {
+    let pagination = await this.recordsPerPage.innerText();
+    expect(pagination, "Default pagination is not 10/page").toEqual(
+      "10 / page"
+    );
+  }
+
+  async openRandomPatient() {
+    this.randomNumber = randomInt(1, 10);
+    let tableData = await this.patientTable.innerText();
+    let allRecordsArray = tableData.split("\n");
+    allRecordsArray.splice(0, 1);
+    this.page
+      .locator(
+        "(//*[@class='ant-table-content'])/table/tbody/tr[" +
+          this.randomNumber +
+          "]/td[1]"
+      )
+      .click();
+  }
+
+  async validatePlaceholders() {
+    await expect(
+      this.firstName,
+      "Placeholder of first name is not as expected"
+    ).toHaveAttribute("placeholder", "Enter");
+    await expect(
+      this.lastName,
+      "Placeholder of last name is not as expected"
+    ).toHaveAttribute("placeholder", "Enter");
+    await expect(
+      this.middleName,
+      "Placeholder of middle name is not as expected"
+    ).toHaveAttribute("placeholder", "Enter");
+    await expect(
+      this.dateOfBirth,
+      "Placeholder of date of birth is not as expected"
+    ).toHaveAttribute("placeholder", "MM/DD/YYYY");
+    await expect(
+      this.sexPlaceholder,
+      "Placeholder of sex is not as expected"
+    ).toHaveText("Select");
+    await expect(
+      this.affectedOrganPlaceholder,
+      "Placeholder of affected organ is not as expected"
+    ).toHaveText("Select");
+  }
+
+  async validatePaginationOptions() {
+    let expectedPaginationOptions = [
+      "10 / page",
+      "20 / page",
+      "50 / page",
+      "100 / page",
+    ];
+    await this.recordsPerPage.click();
+    let actualPaginationOptions = this.paginationOptions.allInnerTexts();
+    let actualPaginationOptionsArray = (await actualPaginationOptions)
+      .toString()
+      .split(",");
+    expect(
+      expectedPaginationOptions,
+      "List of pagination options is not as expected"
+    ).toEqual(actualPaginationOptionsArray);
+  }
+
+  async onHoverValidateBackgroundColor() {
+    await this.page
+      .locator(
+        "(//*[@class='ant-table-content'])/table/tbody/tr[" +
+          this.randomNumber +
+          "]"
+      )
+      .hover();
+    await this.page.waitForTimeout(2000);
+    expect(
+      this.page.locator(
+        "(//*[@class='ant-table-content'])/table/tbody/tr[" +
+          this.randomNumber +
+          "]"
+      )
+    ).toHaveCSS("background-color", "rgba(250, 250, 250, 0.96)");
   }
 }
