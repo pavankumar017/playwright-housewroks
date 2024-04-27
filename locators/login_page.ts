@@ -5,6 +5,7 @@ export class LoginPage {
   readonly contBtn: Locator;
   readonly pwd: Locator;
   readonly lockScreen: Locator;
+  readonly logo: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -12,6 +13,7 @@ export class LoginPage {
     this.contBtn = this.page.getByRole("button", { name: "Continue" });
     this.pwd = this.page.getByPlaceholder("Enter password");
     this.lockScreen = this.page.getByTestId("lock-icon");
+    this.logo = this.page.getByTestId("logo");
   }
   async enterUsername(strUser: string) {
     await this.user_name.fill(strUser);
@@ -27,9 +29,6 @@ export class LoginPage {
   }
   async validateSuccessfulLogin() {
     await this.page.waitForTimeout(5000);
-    await expect(
-      this.lockScreen,
-      "Lock screen not visible after login"
-    ).toBeVisible();
+    await expect(this.logo, "Logo is not visible after login").toBeVisible();
   }
 }

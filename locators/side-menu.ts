@@ -7,6 +7,10 @@ export class SideMenu {
   readonly patientMaster: Locator;
   readonly patientsSideMenu: Locator;
   readonly patientMenuIcon: Locator;
+  readonly administrativeSideMenu: Locator;
+  readonly administrativeDocumentManager: Locator;
+  readonly userManagement: Locator;
+  readonly reviewMasters: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -15,6 +19,18 @@ export class SideMenu {
     this.patientMaster = this.page.locator("[href='/patients']");
     this.patientsSideMenu = this.page.getByText("PATIENTS");
     this.patientMenuIcon = this.page.getByTestId("patients-menu-icon");
+    this.administrativeSideMenu = this.page.getByTestId(
+      "administrative-menu-icon"
+    );
+    this.administrativeDocumentManager = this.page.getByRole("link", {
+      name: "Document Manager",
+    });
+    this.userManagement = this.page.getByRole("link", {
+      name: "User Management",
+    });
+    this.reviewMasters = this.page.getByRole("link", {
+      name: "Review Masters",
+    });
   }
 
   async openCreateFromSideMenu() {
@@ -51,5 +67,18 @@ export class SideMenu {
     await this.patient.hover();
     await this.patientMaster.waitFor();
     await this.patientMaster.click();
+  }
+
+  async openAdministrativeDocumentManager() {
+    await this.administrativeSideMenu.hover();
+    await this.administrativeDocumentManager.click();
+  }
+
+  async validateOptionsUnderAdministrative() {
+    await this.administrativeSideMenu.hover();
+    await this.reviewMasters.waitFor();
+    expect(this.userManagement).toBeVisible();
+    expect(this.reviewMasters).toBeVisible();
+    expect(this.administrativeDocumentManager).toBeVisible();
   }
 }
