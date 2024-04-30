@@ -52,7 +52,7 @@ test("Validate no preview text on files other than PDF or image", async ({
   const sideMenu = new SideMenu(page);
   await sideMenu.openAdministrativeDocumentManager();
   const administrativeDocumentManager = new AdministrativeDocumentManager(page);
-  await administrativeDocumentManager.uploadUnsupportedFile();
+  await administrativeDocumentManager.uploadFileFromGivenPath("./README.md");
   await administrativeDocumentManager.openUnsupportedFile();
   await administrativeDocumentManager.validateNoPreviewText();
 });
@@ -98,7 +98,7 @@ test("Validate search in folder category", async ({ page, baseURL }) => {
   await administrativeDocumentManager.validateSearchInFolderCategory();
 });
 
-test.only("Validate all files are displayed when 'All' folder is selected", async ({
+test("Validate all files are displayed when 'All' folder is selected", async ({
   page,
   baseURL,
 }) => {
@@ -106,6 +106,57 @@ test.only("Validate all files are displayed when 'All' folder is selected", asyn
   const sideMenu = new SideMenu(page);
   await sideMenu.openAdministrativeDocumentManager();
   const administrativeDocumentManager = new AdministrativeDocumentManager(page);
-  // await administrativeDocumentManager.uploadFilesInEachDocumentCategory();
+  await administrativeDocumentManager.uploadFilesInEachDocumentCategory(
+    "./Sample.pdf"
+  );
   await administrativeDocumentManager.validateAllFilesDisplayed();
+});
+
+test("Validate files are displayed of selected folder", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.selectRandomCategory();
+  await administrativeDocumentManager.uploadFileNWithinFolderView(
+    "./Sample.pdf"
+  );
+  await administrativeDocumentManager.validateOnlySelectedFolderFilesDisplayed();
+});
+
+test("Validate search in list view", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.validateSearchInListView("Sample.pdf");
+});
+
+test("Validate no data search in list view", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.validateNoDataSearchInListView();
+});
+
+test("Validate default preview", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.validateDefaultPreview();
+});
+
+test("Validate pdf icon", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.validatePDFIcon();
 });

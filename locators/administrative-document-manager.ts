@@ -19,6 +19,17 @@ export class AdministrativeDocumentManager {
   readonly pageNumberCount: Locator;
   readonly table: Locator;
   readonly nextPage: Locator;
+  randomCategory: number;
+  readonly loader: Locator;
+  readonly fileName: string;
+  readonly noDataListView: Locator;
+  readonly noDataSearchValue: string;
+  readonly emptyPreview: Locator;
+  readonly defaultPreviewText: Locator;
+  readonly PDFIcon: Locator;
+  readonly PDFFilePath: string;
+  readonly firstRecordName: Locator;
+  readonly firstRecordIcon: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -50,6 +61,19 @@ export class AdministrativeDocumentManager {
     );
     this.table = this.page.locator("table tbody");
     this.nextPage = this.page.locator("(//li[@title='Next Page'])");
+    this.randomCategory = randomInt(this.categoryOptions.length - 1);
+    this.loader = this.page.locator(".ant-spin");
+    this.fileName = "README.md";
+    this.noDataListView = this.page.getByText("No document(s) uploaded");
+    this.noDataSearchValue = "fhjgxzjvbgxzjkvgxzj";
+    this.emptyPreview = this.page.getByTestId("empty-view");
+    this.defaultPreviewText = this.page.getByText(
+      "Select a file from the list for preview"
+    );
+    this.PDFIcon = this.page.getByTestId("pdf-icon");
+    this.PDFFilePath = "./Sample.pdf";
+    this.firstRecordName = this.page.locator("table tbody td").first();
+    this.firstRecordIcon = this.page.locator("table tbody td span").first();
   }
 
   async validateAdministrativeDocumentManagerPage() {
@@ -60,26 +84,30 @@ export class AdministrativeDocumentManager {
   }
 
   async validateHeadingText() {
-    await expect(this.heading).toBeVisible();
+    await expect(this.heading, "Heading is not visible").toBeVisible();
   }
 
   async validateHeadingFont() {
-    await expect(this.heading).toHaveCSS("font-size", "16px");
+    await expect(
+      this.heading,
+      "Heading font is not as per the design"
+    ).toHaveCSS("font-size", "16px");
   }
 
   async validateNoPreviewText() {
-    expect(this.noPreviewText).toBeVisible();
+    expect(this.noPreviewText, "Preview text is not visible").toBeVisible();
   }
 
-  async uploadUnsupportedFile() {
-    let randomNumber = randomInt(this.categoryOptions.length - 1);
-    await this.uploadInput.setInputFiles("./README.md");
+  async uploadFileFromGivenPath(filePath: string) {
+    await this.uploadInput.setInputFiles(filePath);
     await this.uploadCategory.click();
     await this.page
-      .getByTitle(this.categoryOptions[randomNumber])
+      .getByTitle(this.categoryOptions[this.randomCategory])
       .locator("div")
       .click();
     await this.uploadModalUploadButton.click();
+    await this.loader.waitFor();
+    await this.loader.waitFor({ state: "hidden" });
   }
 
   async openUnsupportedFile() {
@@ -90,47 +118,52 @@ export class AdministrativeDocumentManager {
 
   async validateFolderLabel() {
     let labelText = await this.folderLabel.innerText();
-    expect(labelText).toMatch("SHOWING FOLDER:");
+    expect(labelText, "Label text is not as per the design").toMatch(
+      "SHOWING FOLDER:"
+    );
   }
 
   async validateDefaultFolderSelected() {
     let defaultFolder = await this.documentCategory.innerText();
-    expect(defaultFolder).toMatch("All");
+    expect(defaultFolder, "Default folder is not selected as 'All'").toMatch(
+      "All"
+    );
   }
 
   async validateSearchPlaceholder() {
-    await expect(this.search).toBeVisible();
-  }
-
-  async validateSearchInFolderCategory() {
-    let randomCategory = randomInt(this.categoryOptions.length - 1);
-    await this.documentCategory.click();
-    await this.documentCategorySearch.fill(
-      this.categoryOptions[randomCategory]
-    );
     await expect(
-      this.page.getByTitle(this.categoryOptions[randomCategory])
+      this.search,
+      "Search placeholder is not as expected"
     ).toBeVisible();
   }
 
-  async uploadFilesInEachDocumentCategory() {
+  async validateSearchInFolderCategory() {
+    await this.documentCategory.click();
+    await this.documentCategorySearch.fill(
+      this.categoryOptions[this.randomCategory]
+    );
+    await expect(
+      this.page.getByTitle(this.categoryOptions[this.randomCategory]),
+      "Result of search inside folder dropdown is not as expected"
+    ).toBeVisible();
+  }
+
+  async uploadFilesInEachDocumentCategory(filePath) {
     for (
       let categoryOptionsIndex = 0;
       categoryOptionsIndex < this.categoryOptions.length;
       categoryOptionsIndex++
     ) {
-      await this.uploadInput.setInputFiles("./README.md");
+      await this.uploadInput.setInputFiles(filePath);
       await this.uploadCategory.click();
       await this.page
         .getByTitle(this.categoryOptions[categoryOptionsIndex])
         .locator("div")
         .click();
       await this.uploadModalUploadButton.click();
+      await this.loader.waitFor();
+      await this.loader.waitFor({ state: "hidden" });
     }
-  }
-
-  async getFolderNameOfDocuments(){
-    
   }
 
   async validateAllFilesDisplayed() {
@@ -149,7 +182,7 @@ export class AdministrativeDocumentManager {
         folderList.push(allRecordsArray[counter]);
       }
       await this.nextPage.click();
-      await this.page.waitForTimeout(2000);
+      await this.loader.waitFor({ state: "hidden" });
     }
     let uniqueFolderList = folderList.filter(
       (item, index) => folderList.indexOf(item) === index
@@ -157,6 +190,110 @@ export class AdministrativeDocumentManager {
 
     let actualSortedFolderList = uniqueFolderList.sort();
     let expectedSortedFolderList = this.categoryOptions.sort();
-    expect(expectedSortedFolderList).toEqual(actualSortedFolderList);
+    expect(
+      expectedSortedFolderList,
+      "All files are not displayed when 'All' folder is selected"
+    ).toEqual(actualSortedFolderList);
+  }
+
+  async validateOnlySelectedFolderFilesDisplayed() {
+    let folderList: string[] = [];
+
+    let pageCount = await this.pageNumberCount.innerText();
+    for (let count = Number(pageCount); count > 0; count = count - 1) {
+      let tableData = await this.table.innerText();
+      let allRecordsArray = tableData.split("\t");
+      allRecordsArray.splice(0, 1);
+      for (
+        let counter = 0;
+        counter < allRecordsArray.length - 1;
+        counter += 2
+      ) {
+        folderList.push(allRecordsArray[counter]);
+      }
+      await this.nextPage.click();
+      await this.loader.waitFor({ state: "hidden" });
+    }
+    let actualFolderValue = folderList.filter(
+      (item, index) => folderList.indexOf(item) === index
+    );
+    expect(
+      this.categoryOptions[this.randomCategory],
+      "Files with folder other than selected are displayed"
+    ).toMatch(actualFolderValue[0]);
+  }
+
+  async selectRandomCategory() {
+    await this.documentCategory.click();
+    await this.page
+      .getByTitle(this.categoryOptions[this.randomCategory])
+      .click();
+    await this.loader.waitFor({ state: "hidden" });
+  }
+
+  async uploadFileNWithinFolderView(filePath) {
+    await this.uploadInput.setInputFiles(filePath);
+    await this.uploadModalUploadButton.click();
+    await this.loader.waitFor();
+    await this.loader.waitFor({ state: "hidden" });
+  }
+
+  async validateSearchInListView(fileName) {
+    let fileNameList: string[] = [];
+    await this.search.fill(fileName);
+    await this.loader.waitFor({ state: "hidden" });
+    let pageCount = await this.pageNumberCount.innerText();
+    for (let count = Number(pageCount); count > 0; count = count - 1) {
+      let tableData = await this.table.innerText();
+      let allRecordsArray = tableData.split("\t");
+      allRecordsArray.splice(0, 1);
+      for (
+        let counter = 1;
+        counter < allRecordsArray.length - 1;
+        counter += 2
+      ) {
+        fileNameList.push(allRecordsArray[counter]);
+      }
+      await this.nextPage.click();
+      await this.loader.waitFor({ state: "hidden" });
+    }
+    let actualFileName = fileNameList.filter(
+      (item, index) => fileNameList.indexOf(item) === index
+    );
+    expect(
+      actualFileName[0].trim(),
+      "Search in list view is not as expected"
+    ).toMatch(this.fileName);
+  }
+
+  async validateNoDataSearchInListView() {
+    await this.search.fill(this.noDataSearchValue);
+    await this.loader.waitFor({ state: "hidden" });
+    await expect(
+      this.noDataListView,
+      "No data search text in list view is not visible"
+    ).toBeVisible();
+    await expect(
+      this.emptyPreview,
+      "No data search text in preview is not visible"
+    ).toBeVisible();
+  }
+
+  async validateDefaultPreview() {
+    await expect(
+      this.defaultPreviewText,
+      "Default preview text is not visible"
+    ).toBeVisible();
+  }
+
+  async validatePDFIcon() {
+    expect(
+      (await this.firstRecordName.innerText()).toString(),
+      "File is not PDF"
+    ).toContain(".pdf");
+    await expect(
+      this.firstRecordIcon,
+      "PDF file icon not displayed for PDF file"
+    ).toHaveAttribute("data-testid", "pdf-icon");
   }
 }
