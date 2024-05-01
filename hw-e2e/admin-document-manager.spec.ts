@@ -57,10 +57,7 @@ test("Validate no preview text on files other than PDF or image", async ({
   await administrativeDocumentManager.validateNoPreviewText();
 });
 
-test("Validate folder label for the category drop down", async ({
-  page,
-  baseURL,
-}) => {
+test("Validate 'SHOWING FOLDER' label", async ({ page, baseURL }) => {
   await page.goto(`${baseURL}`);
   const sideMenu = new SideMenu(page);
   await sideMenu.openAdministrativeDocumentManager();

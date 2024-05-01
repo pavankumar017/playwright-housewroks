@@ -168,54 +168,47 @@ export class AdministrativeDocumentManager {
 
   async validateAllFilesDisplayed() {
     let folderList: string[] = [];
-
+    let filteredList: string[] = [];
     let pageCount = await this.pageNumberCount.innerText();
     for (let count = Number(pageCount); count > 0; count = count - 1) {
       let tableData = await this.table.innerText();
-      let allRecordsArray = tableData.split("\t");
+      let allRecordsArray = tableData.split("\n");
       allRecordsArray.splice(0, 1);
-      for (
-        let counter = 0;
-        counter < allRecordsArray.length - 1;
-        counter += 2
-      ) {
-        folderList.push(allRecordsArray[counter]);
+      folderList = allRecordsArray.filter((element) => element.includes("\t"));
+      for (let counter = 0; counter < folderList.length - 1; counter++) {
+        filteredList.push(folderList[counter].replace("\t", ""));
       }
       await this.nextPage.click();
       await this.loader.waitFor({ state: "hidden" });
     }
-    let uniqueFolderList = folderList.filter(
-      (item, index) => folderList.indexOf(item) === index
+    let uniqueFolderList = filteredList.filter(
+      (item, index) => filteredList.indexOf(item) === index
     );
-
     let actualSortedFolderList = uniqueFolderList.sort();
     let expectedSortedFolderList = this.categoryOptions.sort();
     expect(
-      expectedSortedFolderList,
+      actualSortedFolderList,
       "All files are not displayed when 'All' folder is selected"
-    ).toEqual(actualSortedFolderList);
+    ).toEqual(expectedSortedFolderList);
   }
 
   async validateOnlySelectedFolderFilesDisplayed() {
     let folderList: string[] = [];
-
+    let filteredList: string[] = [];
     let pageCount = await this.pageNumberCount.innerText();
     for (let count = Number(pageCount); count > 0; count = count - 1) {
       let tableData = await this.table.innerText();
-      let allRecordsArray = tableData.split("\t");
+      let allRecordsArray = tableData.split("\n");
       allRecordsArray.splice(0, 1);
-      for (
-        let counter = 0;
-        counter < allRecordsArray.length - 1;
-        counter += 2
-      ) {
-        folderList.push(allRecordsArray[counter]);
+      folderList = allRecordsArray.filter((element) => element.includes("\t"));
+      for (let counter = 0; counter < folderList.length - 1; counter++) {
+        filteredList.push(folderList[counter].replace("\t", ""));
       }
       await this.nextPage.click();
       await this.loader.waitFor({ state: "hidden" });
     }
-    let actualFolderValue = folderList.filter(
-      (item, index) => folderList.indexOf(item) === index
+    let actualFolderValue = filteredList.filter(
+      (item, index) => filteredList.indexOf(item) === index
     );
     expect(
       this.categoryOptions[this.randomCategory],
@@ -238,32 +231,27 @@ export class AdministrativeDocumentManager {
     await this.loader.waitFor({ state: "hidden" });
   }
 
-  async validateSearchInListView(fileName) {
-    let fileNameList: string[] = [];
+  async validateSearchInListView(fileName: string) {
+    let filteredFileNameList: string[] = [];
     await this.search.fill(fileName);
     await this.loader.waitFor({ state: "hidden" });
     let pageCount = await this.pageNumberCount.innerText();
     for (let count = Number(pageCount); count > 0; count = count - 1) {
       let tableData = await this.table.innerText();
-      let allRecordsArray = tableData.split("\t");
-      allRecordsArray.splice(0, 1);
-      for (
-        let counter = 1;
-        counter < allRecordsArray.length - 1;
-        counter += 2
-      ) {
-        fileNameList.push(allRecordsArray[counter]);
-      }
+      let allRecordsArray = tableData.split("\n");
+      filteredFileNameList = allRecordsArray.filter(
+        (element) => element.trim() !== "" && !element.includes("\t")
+      );
       await this.nextPage.click();
       await this.loader.waitFor({ state: "hidden" });
     }
-    let actualFileName = fileNameList.filter(
-      (item, index) => fileNameList.indexOf(item) === index
+    let actualFileName = filteredFileNameList.filter(
+      (item, index) => filteredFileNameList.indexOf(item) === index
     );
     expect(
       actualFileName[0].trim(),
       "Search in list view is not as expected"
-    ).toMatch(this.fileName);
+    ).toMatch(fileName);
   }
 
   async validateNoDataSearchInListView() {
