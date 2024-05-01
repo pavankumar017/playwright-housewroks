@@ -248,10 +248,9 @@ export class AdministrativeDocumentManager {
     let actualFileName = filteredFileNameList.filter(
       (item, index) => filteredFileNameList.indexOf(item) === index
     );
-    expect(
-      actualFileName[0].trim(),
-      "Search in list view is not as expected"
-    ).toMatch(fileName);
+    expect(actualFileName[0], "Search in list view is not as expected").toMatch(
+      fileName
+    );
   }
 
   async validateNoDataSearchInListView() {
@@ -263,7 +262,7 @@ export class AdministrativeDocumentManager {
     ).toBeVisible();
     await expect(
       this.emptyPreview,
-      "No data search text in preview is not visible"
+      "Empty preview is not visible"
     ).toBeVisible();
   }
 
