@@ -137,11 +137,14 @@ export class AdministrativeDocumentManager {
     ).toBeVisible();
   }
 
-  async validateSearchInFolderCategory() {
+  async searchInFolderCategory() {
     await this.documentCategory.click();
     await this.documentCategorySearch.fill(
       this.categoryOptions[this.randomCategory]
     );
+  }
+
+  async validateSearchInFolderCategory() {
     await expect(
       this.page.getByTitle(this.categoryOptions[this.randomCategory]),
       "Result of search inside folder dropdown is not as expected"
@@ -231,10 +234,13 @@ export class AdministrativeDocumentManager {
     await this.loader.waitFor({ state: "hidden" });
   }
 
-  async validateSearchInListView(fileName: string) {
-    let filteredFileNameList: string[] = [];
+  async searchInListView(fileName: string) {
     await this.search.fill(fileName);
     await this.loader.waitFor({ state: "hidden" });
+  }
+
+  async validateSearchInListView(fileName: string) {
+    let filteredFileNameList: string[] = [];
     let pageCount = await this.pageNumberCount.innerText();
     for (let count = Number(pageCount); count > 0; count = count - 1) {
       let tableData = await this.table.innerText();
@@ -253,9 +259,12 @@ export class AdministrativeDocumentManager {
     );
   }
 
-  async validateNoDataSearchInListView() {
+  async noDataSearchInListView() {
     await this.search.fill(this.noDataSearchValue);
     await this.loader.waitFor({ state: "hidden" });
+  }
+
+  async validateNoDataSearchInListView() {
     await expect(
       this.noDataListView,
       "No data search text in list view is not visible"

@@ -84,6 +84,7 @@ test("Validate the search placeholder in search bar", async ({
   const sideMenu = new SideMenu(page);
   await sideMenu.openAdministrativeDocumentManager();
   const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.searchInFolderCategory();
   await administrativeDocumentManager.validateSearchPlaceholder();
 });
 
@@ -92,6 +93,7 @@ test("Validate search in folder category", async ({ page, baseURL }) => {
   const sideMenu = new SideMenu(page);
   await sideMenu.openAdministrativeDocumentManager();
   const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.searchInFolderCategory();
   await administrativeDocumentManager.validateSearchInFolderCategory();
 });
 
@@ -130,6 +132,7 @@ test("Validate search in list view", async ({ page, baseURL }) => {
   await sideMenu.openAdministrativeDocumentManager();
   const administrativeDocumentManager = new AdministrativeDocumentManager(page);
   await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.searchInListView("Sample.pdf");
   await administrativeDocumentManager.validateSearchInListView("Sample.pdf");
 });
 
@@ -138,6 +141,7 @@ test("Validate no data search in list view", async ({ page, baseURL }) => {
   const sideMenu = new SideMenu(page);
   await sideMenu.openAdministrativeDocumentManager();
   const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.noDataSearchInListView();
   await administrativeDocumentManager.validateNoDataSearchInListView();
 });
 
