@@ -53,6 +53,7 @@ test("Validate no preview text on files other than PDF or image", async ({
   await sideMenu.openAdministrativeDocumentManager();
   const administrativeDocumentManager = new AdministrativeDocumentManager(page);
   await administrativeDocumentManager.uploadFileFromGivenPath("./README.md");
+  await administrativeDocumentManager.searchInListView(".md");
   await administrativeDocumentManager.openUnsupportedFile();
   await administrativeDocumentManager.validateNoPreviewText();
 });
@@ -160,4 +161,56 @@ test("Validate pdf icon", async ({ page, baseURL }) => {
   const administrativeDocumentManager = new AdministrativeDocumentManager(page);
   await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
   await administrativeDocumentManager.validatePDFIcon();
+});
+
+test("Validate image icon", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadMultipleFiles([
+    "./image1.png",
+    "./image2.jpeg",
+    "./image3.jpg",
+  ]);
+  await administrativeDocumentManager.searchInListView(".png");
+  await administrativeDocumentManager.validateImageIcon();
+  await administrativeDocumentManager.searchInListView(".jpeg");
+  await administrativeDocumentManager.validateImageIcon();
+  await administrativeDocumentManager.searchInListView(".jpg");
+  await administrativeDocumentManager.validateImageIcon();
+});
+
+test("Validate unknown icon", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./README.md");
+  await administrativeDocumentManager.validateUnknownIcon();
+});
+
+test("Validate ellipsis on long name", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath(
+    "./Scenarios_-_List_2de599dac50a4b6cb3e7eeab89461e7f.md"
+  );
+  await administrativeDocumentManager.searchInListView(
+    "Scenarios - List 2de599dac50a4b6cb3e7eeab89461e7f.md"
+  );
+  await administrativeDocumentManager.validateEllipsis(
+    "Scenarios - List 2de599dac50a4b6cb3e7eeab89461e7f.md"
+  );
+});
+
+test("Validate i icon data", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.validateIIconData();
 });

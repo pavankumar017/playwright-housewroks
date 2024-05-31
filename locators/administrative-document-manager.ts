@@ -11,7 +11,7 @@ export class AdministrativeDocumentManager {
   readonly uploadModalUploadButton: Locator;
   readonly uploadInput: Locator;
   readonly search: Locator;
-  readonly unsupportedFileSearch: Locator;
+  readonly unsupportedFile: Locator;
   readonly openUnsupportedSearchedFile: Locator;
   readonly folderLabel: Locator;
   readonly documentCategorySearch: Locator;
@@ -30,6 +30,8 @@ export class AdministrativeDocumentManager {
   readonly PDFFilePath: string;
   readonly firstRecordName: Locator;
   readonly firstRecordIcon: Locator;
+  readonly iIcon: Locator;
+  readonly uploadedByTooltip: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -45,7 +47,7 @@ export class AdministrativeDocumentManager {
       .getByRole("button", { name: "Upload" });
     this.uploadInput = this.page.getByTestId("upload-patient-documents");
     this.search = this.page.getByPlaceholder("Search");
-    this.unsupportedFileSearch = this.page.getByText("README.md").first();
+    this.unsupportedFile = this.page.getByText("README.md").first();
     this.openUnsupportedSearchedFile = this.page
       .getByRole("cell", { name: "file-exclamation README.md" })
       .first();
@@ -74,6 +76,32 @@ export class AdministrativeDocumentManager {
     this.PDFFilePath = "./Sample.pdf";
     this.firstRecordName = this.page.locator("table tbody td").first();
     this.firstRecordIcon = this.page.locator("table tbody td span").first();
+    this.iIcon = this.page.locator("[data-icon='info-circle']");
+    this.uploadedByTooltip = this.page.getByRole("tooltip");
+  }
+
+  formatDateToMMDDYYYY() {
+    let date = new Date();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // getMonth() is zero-based
+    const day = date.getDate().toString().padStart(2, "0");
+    const year = date.getFullYear();
+
+    return `${month}/${day}/${year}`;
+  }
+
+  getCurrentTime(): string {
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes: string = now.getMinutes().toString().padStart(2, "0");
+    const hrFormat = hours >= 12 ? "PM" : "AM";
+
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 12-hour clock
+
+    const formattedTime = `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")} ${hrFormat}`;
+    return formattedTime;
   }
 
   async validateAdministrativeDocumentManagerPage() {
@@ -111,8 +139,7 @@ export class AdministrativeDocumentManager {
   }
 
   async openUnsupportedFile() {
-    await this.search.fill(".md");
-    await this.unsupportedFileSearch.click();
+    await this.unsupportedFile.click();
     await this.openUnsupportedSearchedFile.click();
   }
 
@@ -291,5 +318,50 @@ export class AdministrativeDocumentManager {
       this.firstRecordIcon,
       "PDF file icon not displayed for PDF file"
     ).toHaveAttribute("data-testid", "pdf-icon");
+  }
+
+  async uploadMultipleFiles(filePath: string[]) {
+    await this.uploadInput.setInputFiles(filePath);
+    await this.uploadCategory.click();
+    await this.page
+      .getByTitle(this.categoryOptions[this.randomCategory])
+      .locator("div")
+      .click();
+    await this.uploadModalUploadButton.click();
+    await this.loader.waitFor();
+    await this.loader.waitFor({ state: "hidden" });
+  }
+
+  async validateImageIcon() {
+    await expect(
+      this.firstRecordIcon,
+      "Image file icon not displayed for image file"
+    ).toHaveAttribute("data-testid", "image-icon");
+  }
+
+  async validateUnknownIcon() {
+    await expect(
+      this.firstRecordIcon,
+      "Image file icon not displayed for unsupported file"
+    ).toHaveAttribute("data-testid", "unknown");
+  }
+
+  async validateEllipsis(fileName: string) {
+    let ellipsis = this.page
+      .locator("[class*='ant-typography-single-line']")
+      .getByText(fileName);
+    expect(ellipsis).toBeVisible();
+  }
+
+  async validateIIconData() {
+    await this.iIcon.first().hover();
+    let tooltipData = await this.uploadedByTooltip.innerText();
+    let todayDate = this.formatDateToMMDDYYYY();
+    let currentTime = this.getCurrentTime();
+    let expectedTooltipData =
+      "Uploaded by Gogte, Rucheta A on " + todayDate + " at " + currentTime;
+    console.log(expectedTooltipData);
+    console.log(currentTime);
+    expect(expectedTooltipData).toMatch(tooltipData);
   }
 }
