@@ -32,6 +32,17 @@ export class AdministrativeDocumentManager {
   readonly firstRecordIcon: Locator;
   readonly iIcon: Locator;
   readonly uploadedByTooltip: Locator;
+  readonly activePageNumber: Locator;
+  readonly totalItems: Locator;
+  readonly recordsPerPage: Locator;
+  readonly paginationOptions: Locator;
+  readonly imagePreview: Locator;
+  readonly pdfPreview: Locator;
+  readonly noDataSearchEmptyPreviewText: string;
+  expectedPageNumber: string;
+  readonly previousPage: Locator;
+  readonly highlightedRow: Locator;
+  readonly firstRow: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -78,6 +89,26 @@ export class AdministrativeDocumentManager {
     this.firstRecordIcon = this.page.locator("table tbody td span").first();
     this.iIcon = this.page.locator("[data-icon='info-circle']");
     this.uploadedByTooltip = this.page.getByRole("tooltip");
+    this.activePageNumber = this.page.locator(
+      "[class*='ant-pagination-item-active']"
+    );
+    this.totalItems = this.page.getByText("item(s)");
+    this.recordsPerPage = this.page.locator(
+      "(//li[@title='Next Page'])/following-sibling::li[1]"
+    );
+    this.paginationOptions = this.page.getByRole("option");
+    this.imagePreview = this.page.locator("img[alt='document image']");
+    this.pdfPreview = this.page
+      .getByTestId("pdf-document")
+      .locator("canvas")
+      .first();
+    this.noDataSearchEmptyPreviewText =
+      "Document Manager\nDrag and drop your documents anywhere on this screen or click on ‘Upload’ button on top to upload.\nOrganise all your uploaded documents into relevant pre-defined folders.\nPreview, edit, download or delete your documents in just a click.";
+    this.previousPage = this.page.locator("(//li[@title='Previous Page'])");
+    this.highlightedRow = this.page
+      .locator("tbody [class*='ant-table-cell-row-hover']")
+      .first();
+    this.firstRow = this.table.locator("tr").first();
   }
 
   formatDateToMMDDYYYY() {
@@ -300,6 +331,9 @@ export class AdministrativeDocumentManager {
       this.emptyPreview,
       "Empty preview is not visible"
     ).toBeVisible();
+    expect(await this.emptyPreview.innerText()).toEqual(
+      this.noDataSearchEmptyPreviewText
+    );
   }
 
   async validateDefaultPreview() {
@@ -350,7 +384,7 @@ export class AdministrativeDocumentManager {
     let ellipsis = this.page
       .locator("[class*='ant-typography-single-line']")
       .getByText(fileName);
-    expect(ellipsis).toBeVisible();
+    expect(ellipsis, "Ellipsis is not displayed for long name").toBeVisible();
   }
 
   async validateIIconData() {
@@ -360,8 +394,154 @@ export class AdministrativeDocumentManager {
     let currentTime = this.getCurrentTime();
     let expectedTooltipData =
       "Uploaded by Gogte, Rucheta A on " + todayDate + " at " + currentTime;
-    console.log(expectedTooltipData);
-    console.log(currentTime);
-    expect(expectedTooltipData).toMatch(tooltipData);
+    expect(expectedTooltipData, "i icon data is not as expected").toMatch(
+      tooltipData
+    );
+  }
+
+  async navigateToNextPage() {
+    await this.nextPage.click();
+  }
+
+  async validateFirstPageIsActive() {
+    let activePageNumberValue = await this.activePageNumber.innerText();
+    expect(activePageNumberValue, "First page is not active").toBe("1");
+  }
+
+  async validateTotalItemsIsVisible() {
+    let regularExpression = /Total (\d+) item\(s\)/;
+    await expect(this.totalItems, "Total items are not visible").toBeVisible();
+    expect(
+      (await this.totalItems.innerText()).toString(),
+      "Total items text is incorrect"
+    ).toEqual(expect.stringMatching(regularExpression));
+  }
+
+  async validatePagination() {
+    await this.totalItems.isVisible();
+    let totalItemsText = (await this.totalItems.innerText()).toString();
+    let totalItemsTextArray = totalItemsText.split(" ");
+    let totalItemsCount = totalItemsTextArray[1];
+    let recordsPerPageOption = ["20", "50", "100"];
+    let expectedPageCount = Math.ceil(Number(totalItemsCount) / 10);
+    let actualPageCount = (await this.pageNumberCount.innerText()).toString();
+    expect(expectedPageCount.toString(), "Page count is incorrect").toEqual(
+      actualPageCount
+    );
+    for (const recordsPerPageValue of recordsPerPageOption) {
+      await this.recordsPerPage.click();
+      await this.page
+        .locator("//*[@title='" + recordsPerPageValue + " / page']")
+        .click();
+      await this.loader.waitFor();
+      await this.loader.waitFor({ state: "hidden" });
+      let expectedPageCount = Math.ceil(
+        Number(totalItemsCount) / Number(recordsPerPageValue)
+      );
+      let actualPageCount = (await this.pageNumberCount.innerText()).toString();
+      expect(expectedPageCount.toString(), "Page count is incorrect").toEqual(
+        actualPageCount
+      );
+    }
+  }
+
+  async validateDefaultSort(fileName: string) {
+    let filteredFileNameList: string[] = [];
+    let pageCount = await this.pageNumberCount.innerText();
+    let tableData = await this.table.innerText();
+    let allRecordsArray = tableData.split("\n");
+    filteredFileNameList = allRecordsArray.filter(
+      (element) => element.trim() !== "" && !element.includes("\t")
+    );
+    await this.nextPage.click();
+    await this.loader.waitFor({ state: "hidden" });
+    expect(
+      filteredFileNameList[0],
+      "Search in list view is not as expected"
+    ).toMatch(fileName);
+  }
+
+  async validateImagePreview() {
+    await expect(
+      this.imagePreview,
+      "Image preview is not displayed"
+    ).toBeVisible();
+  }
+
+  async openMentionedFile(fileName: string) {
+    this.page.getByText(fileName).first().click();
+  }
+
+  async validatePDFPreview() {
+    await expect(this.pdfPreview, "PDF preview is not displayed").toBeVisible();
+  }
+
+  async changeActivePage(expectedPageNumber: string) {
+    await this.nextPage.waitFor();
+    if (!this.nextPage.isEnabled()) {
+      console.log(
+        "Only one page exists in administrative document manager list view"
+      );
+    } else {
+      await this.nextPage.click();
+      await this.page.waitForTimeout(2000);
+    }
+  }
+
+  async validateActivePage(expectedPageNumber: string) {
+    let activePageNumberValue = await this.activePageNumber.innerText();
+    expect(activePageNumberValue, "First page is not active").toBe(
+      expectedPageNumber
+    );
+  }
+
+  async validatePreviousPageDisabled() {
+    await this.previousPage.waitFor();
+    expect(
+      this.previousPage.isDisabled(),
+      "Previous page button is not disabled"
+    ).toBeTruthy();
+  }
+
+  async validatePreviousPageEnabled() {
+    await this.loader.waitFor();
+    await this.loader.waitFor({ state: "hidden" });
+    expect(
+      this.previousPage.isEnabled(),
+      "Previous page button is not enabled"
+    ).toBeTruthy();
+  }
+
+  async goToLastPage() {
+    await this.pageNumberCount.click();
+  }
+
+  async validateNextPageDisabled() {
+    expect(
+      this.nextPage.isDisabled(),
+      "Previous page button is not disabled"
+    ).toBeTruthy();
+  }
+
+  async validateNextPageEnabled() {
+    expect(
+      await this.nextPage.isEnabled(),
+      "Next page button is not enabled"
+    ).toBeTruthy();
+  }
+
+  async hoverOnFirstRecord() {
+    await this.firstRow.hover();
+  }
+
+  async clickOnFirstRecord() {
+    await this.firstRow.click();
+  }
+
+  async validateHighlightedRow() {
+    await expect(this.firstRow).toHaveAttribute(
+      "background-color",
+      "rgba(242, 246, 255)"
+    );
   }
 }
