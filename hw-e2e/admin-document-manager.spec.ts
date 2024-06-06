@@ -193,12 +193,13 @@ test("Validate ellipsis on long name", async ({ page, baseURL }) => {
   );
 });
 
-test("Validate i icon data", async ({ page, baseURL }) => {
+test("Validate i icon data in list view", async ({ page, baseURL }) => {
   await page.goto(`${baseURL}`);
   const sideMenu = new SideMenu(page);
   await sideMenu.openAdministrativeDocumentManager();
   const administrativeDocumentManager = new AdministrativeDocumentManager(page);
   await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.hoverOnIIconInListView();
   await administrativeDocumentManager.validateIIconData();
 });
 
@@ -385,4 +386,258 @@ test.skip("Validate background colour on click any file", async ({
   const administrativeDocumentManager = new AdministrativeDocumentManager(page);
   await administrativeDocumentManager.clickOnFirstRecord();
   await administrativeDocumentManager.validateHighlightedRow();
+});
+
+test("Validate i icon data in preview for image", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./image1.png");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.hoverOnIIconInPreview();
+  await administrativeDocumentManager.validateIIconData();
+});
+
+test("Validate full screen hides list view for image", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./image1.png");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnFullScreen();
+  await administrativeDocumentManager.validateExitFullScreenDisplayed();
+  await administrativeDocumentManager.validateListViewNotDisplayed();
+});
+
+test("Validate download button should be visible in the preview", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.validateDownloadButtonVisible();
+});
+
+test("Validate filename in the preview", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.getFileNameOfFirstRecord();
+  await administrativeDocumentManager.validateFileNameInPreview();
+});
+
+test("Validate i icon data in preview for PDF", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.hoverOnIIconInPreview();
+  await administrativeDocumentManager.validateIIconData();
+});
+
+test("Validate full screen hides list view for PDF", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnFullScreen();
+  await administrativeDocumentManager.validateExitFullScreenDisplayed();
+  await administrativeDocumentManager.validateListViewNotDisplayed();
+});
+
+test("Validate exit full screen for PDF", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnFullScreen();
+  await administrativeDocumentManager.validateEnterFullScreenDisplayed();
+  await administrativeDocumentManager.validateListViewDisplayed();
+});
+
+test("Validate download button functionality", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnDownload();
+  await administrativeDocumentManager.validateDownload();
+});
+
+test("Validate loader displayed before preview", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.validateLoaderDisplayed();
+});
+
+test("Validate edit modal should be displayed on click edit button", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnEditButton();
+  await administrativeDocumentManager.validateUpdateButtonDisplayed();
+});
+
+test("Validate heading of the edit modal", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnEditButton();
+  await administrativeDocumentManager.validateHeadingOfEditModal();
+});
+
+test("Validate help text in the edit modal", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnEditButton();
+  await administrativeDocumentManager.validateHelpTextOfEditModal();
+});
+
+test("Validate folder selected should be same as file uploaded", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnEditButton();
+  await administrativeDocumentManager.validateHelpTextOfEditModal();
+});
+
+test("Validate heading of the selected documents in edit modal", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnEditButton();
+  await administrativeDocumentManager.validateHelpTextOfEditModal();
+});
+
+test.skip("Validate colour of the file name in eit modal", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnEditButton();
+  await administrativeDocumentManager.validateBackgroundColourOfFileName();
+});
+
+test("Validate cancel button text", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnEditButton();
+  await administrativeDocumentManager.validateCancelButtonVisible();
+});
+
+test("Validate edit modal is closed on click cancel button", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnEditButton();
+  await administrativeDocumentManager.clickOnCancelButton();
+  await administrativeDocumentManager.validateEditModalIsClosed();
+});
+
+test("Validate text of update button", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnEditButton();
+  await administrativeDocumentManager.validateUpdateButtonDisplayed();
+});
+
+test.skip("Validate background colour of the update button in edit modal", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnEditButton();
+  await administrativeDocumentManager.validateBackgroundColourOfUpdateButton();
+});
+
+test("Validate folder value on changing folder in list view", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  // await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnEditButton();
+  await administrativeDocumentManager.changeFolder();
+  await administrativeDocumentManager.clickOnUpdateButton();
+  await administrativeDocumentManager.validateFolderInListView();
 });
