@@ -544,7 +544,7 @@ test("Validate folder selected should be same as file uploaded", async ({
   await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
   await administrativeDocumentManager.clickOnFirstRecord();
   await administrativeDocumentManager.clickOnEditButton();
-  await administrativeDocumentManager.validateHelpTextOfEditModal();
+  await administrativeDocumentManager.validateFolderInEditModal();
 });
 
 test("Validate heading of the selected documents in edit modal", async ({
@@ -558,7 +558,7 @@ test("Validate heading of the selected documents in edit modal", async ({
   await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
   await administrativeDocumentManager.clickOnFirstRecord();
   await administrativeDocumentManager.clickOnEditButton();
-  await administrativeDocumentManager.validateHelpTextOfEditModal();
+  await administrativeDocumentManager.validateModalDocumentHeading();
 });
 
 test.skip("Validate colour of the file name in eit modal", async ({
@@ -575,7 +575,7 @@ test.skip("Validate colour of the file name in eit modal", async ({
   await administrativeDocumentManager.validateBackgroundColourOfFileName();
 });
 
-test("Validate cancel button text", async ({ page, baseURL }) => {
+test("Validate cancel button text in edit modal", async ({ page, baseURL }) => {
   await page.goto(`${baseURL}`);
   const sideMenu = new SideMenu(page);
   await sideMenu.openAdministrativeDocumentManager();
@@ -598,7 +598,7 @@ test("Validate edit modal is closed on click cancel button", async ({
   await administrativeDocumentManager.clickOnFirstRecord();
   await administrativeDocumentManager.clickOnEditButton();
   await administrativeDocumentManager.clickOnCancelButton();
-  await administrativeDocumentManager.validateEditModalIsClosed();
+  await administrativeDocumentManager.validateModalIsClosed();
 });
 
 test("Validate text of update button", async ({ page, baseURL }) => {
@@ -634,10 +634,271 @@ test("Validate folder value on changing folder in list view", async ({
   const sideMenu = new SideMenu(page);
   await sideMenu.openAdministrativeDocumentManager();
   const administrativeDocumentManager = new AdministrativeDocumentManager(page);
-  // await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
   await administrativeDocumentManager.clickOnFirstRecord();
   await administrativeDocumentManager.clickOnEditButton();
   await administrativeDocumentManager.changeFolder();
   await administrativeDocumentManager.clickOnUpdateButton();
   await administrativeDocumentManager.validateFolderInListView();
+});
+
+test("Validate success toast message after updating folder", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnEditButton();
+  await administrativeDocumentManager.changeFolder();
+  await administrativeDocumentManager.clickOnUpdateButton();
+  await administrativeDocumentManager.validateUpdateToastMessage();
+});
+
+test("Validate delete modal is displayed on click delete", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnDeleteButton();
+  await administrativeDocumentManager.validateDeleteModalHeading();
+});
+
+test("Validate content of the delete modal", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.getFileNameOfFirstRecord();
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnDeleteButton();
+  await administrativeDocumentManager.validateDeleteConfirmText();
+});
+
+test("Validate text of the cancel button", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.getFileNameOfFirstRecord();
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnDeleteButton();
+  await administrativeDocumentManager.validateCancelButtonVisible();
+});
+
+test("Validate edit modal should be closed on click cancel button", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.getFileNameOfFirstRecord();
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnDeleteButton();
+  await administrativeDocumentManager.clickOnCancelButton();
+  await administrativeDocumentManager.validateModalIsClosed();
+});
+
+test("Validate text of the confirm button on delete modal", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.getFileNameOfFirstRecord();
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnDeleteButton();
+  await administrativeDocumentManager.validateConfirmButtonVisible();
+});
+
+test("Validate deletion of file", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath(
+    "./temporaryFile.pdf"
+  );
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnDeleteButton();
+  await administrativeDocumentManager.clickOnConfirmButton();
+  await administrativeDocumentManager.waitForLoaderToShow();
+  await administrativeDocumentManager.waitForLoaderToHide();
+  await administrativeDocumentManager.searchInListView("temporaryFile.pdf");
+  await administrativeDocumentManager.validateNoDataSearchInListView();
+});
+
+test("Validate success toast message after deletion of file", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath(
+    "./temporaryFile.pdf"
+  );
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnDeleteButton();
+  await administrativeDocumentManager.clickOnConfirmButton();
+  await administrativeDocumentManager.waitForLoaderToShow();
+  await administrativeDocumentManager.waitForLoaderToHide();
+  await administrativeDocumentManager.validateDeleteToastMessage();
+});
+
+test.skip("Validate help text on drag and drop file upload", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.dragAndDropFile();
+  await administrativeDocumentManager.validateHelpTextOnDragAndDrop();
+});
+
+test("Validate file name in file upload modal", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.openUploadModal("./image1.png");
+  await administrativeDocumentManager.validateFileNameInUploadModal(
+    "image1.png"
+  );
+});
+
+test("Validate heading in the upload modal", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.openUploadModal("./image1.png");
+  await administrativeDocumentManager.validateHeadingInUploadModal();
+});
+
+test("Validate sub heading in the upload modal", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.openUploadModal("./image1.png");
+  await administrativeDocumentManager.validateSubHeadingInUploadModal();
+});
+
+test("Validate no folder should be selected be default in the upload modal", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.openUploadModal("./image1.png");
+  await administrativeDocumentManager.validateNoDefaultFolderSelected();
+});
+
+test("Validate heading of the selected files in upload modal", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.openUploadModal("./image1.png");
+  await administrativeDocumentManager.validateModalDocumentHeading();
+});
+
+test("Validate 'x' displayed for file in upload modal", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.openUploadModal("./image1.png");
+  await administrativeDocumentManager.validateXButtonToRemoveDocument();
+});
+
+test("Validate file is removed on click 'x' button in upload modal", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.openUploadModal("./image1.png");
+  await administrativeDocumentManager.removeFile();
+  await administrativeDocumentManager.validateFileRemoved("image1.png");
+});
+
+test("Validate cancel button text in upload modal", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.openUploadModal("./image1.png");
+  await administrativeDocumentManager.validateCancelButtonVisible();
+});
+
+test("Validate upload modal should be closed on click cancel button", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.openUploadModal("./image1.png");
+  await administrativeDocumentManager.clickOnCancelButton();
+  await administrativeDocumentManager.validateModalIsClosed();
+});
+
+test("Validate upload button should be disabled be default", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.openUploadModal("./image1.png");
+  await administrativeDocumentManager.validateUploadButtonDisabled();
+});
+
+test("Validate upload button should be enabled after selecting the folder", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.openUploadModal("./image1.png");
+  await administrativeDocumentManager.selectRandomFolder();
+  await administrativeDocumentManager.validateUploadButtonEnabled();
 });

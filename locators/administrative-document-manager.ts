@@ -1,5 +1,7 @@
+/// <reference lib="dom" />
 import { Locator, Page, expect } from "@playwright/test";
 import { randomInt } from "crypto";
+import { readFileSync } from "fs";
 
 export class AdministrativeDocumentManager {
   readonly page: Page;
@@ -51,9 +53,20 @@ export class AdministrativeDocumentManager {
   readonly updateButton: Locator;
   readonly editModalHeading: Locator;
   readonly editModalHelpText: Locator;
-  readonly editModalDocumentHeading: Locator;
+  readonly modalDocumentHeading: Locator;
   readonly editFileName: Locator;
   readonly cancelButton: Locator;
+  readonly alert: Locator;
+  readonly deleteModalHeading: Locator;
+  readonly deleteButton: Locator;
+  readonly deleteModalContent: Locator;
+  readonly confirmButton: Locator;
+  readonly helpTextDragAndDrop: Locator;
+  readonly fileNameInUploadModal: Locator;
+  readonly uploadModalHeading: Locator;
+  readonly uploadModalSubHeading: Locator;
+  readonly xButtonForDocument: Locator;
+  readonly uploadButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -134,9 +147,30 @@ export class AdministrativeDocumentManager {
     this.editModalHelpText = this.page.getByText(
       "Please select a folder to add the selected document(s)."
     );
-    this.editModalDocumentHeading = this.page.getByText("SELECTED DOCUMENT(S)");
+    this.modalDocumentHeading = this.page.getByText("SELECTED DOCUMENT(S)");
     this.editFileName = this.page.getByTestId("edit-file");
     this.cancelButton = this.page.getByRole("button", { name: "Cancel" });
+    this.alert = this.page.locator("//*[@role='alert']");
+    this.deleteModalHeading = this.page.getByText("Delete file");
+    this.deleteButton = this.page.getByText("Delete");
+    this.deleteModalContent = this.page.locator(".ant-modal-confirm-content");
+    this.confirmButton = this.page.getByRole("button", { name: "Confirm" });
+    this.helpTextDragAndDrop = this.page.getByText(
+      "Drop your files here to upload"
+    );
+    this.fileNameInUploadModal = this.page.locator(
+      "[data-testid*='rc-upload']"
+    );
+    this.uploadModalHeading = this.page
+      .locator("h4")
+      .getByText("Select a Folder");
+    this.uploadModalSubHeading = this.page.getByText(
+      "Please select a folder to add the selected document(s)."
+    );
+    this.xButtonForDocument = this.fileNameInUploadModal.locator("svg");
+    this.uploadButton = this.page
+      .getByTestId("upload-modal")
+      .getByRole("button", { name: "Upload" });
   }
 
   formatDateToMMDDYYYY() {
@@ -193,8 +227,8 @@ export class AdministrativeDocumentManager {
       .locator("div")
       .click();
     await this.uploadModalUploadButton.click();
-    await this.loader.waitFor();
-    await this.loader.waitFor({ state: "hidden" });
+    await this.waitForLoaderToShow();
+    await this.waitForLoaderToHide();
   }
 
   async openUnsupportedFile() {
@@ -250,8 +284,8 @@ export class AdministrativeDocumentManager {
         .locator("div")
         .click();
       await this.uploadModalUploadButton.click();
-      await this.loader.waitFor();
-      await this.loader.waitFor({ state: "hidden" });
+      await this.waitForLoaderToShow();
+      await this.waitForLoaderToHide();
     }
   }
 
@@ -268,7 +302,7 @@ export class AdministrativeDocumentManager {
         filteredList.push(folderList[counter].replace("\t", ""));
       }
       await this.nextPage.click();
-      await this.loader.waitFor({ state: "hidden" });
+      await this.waitForLoaderToHide();
     }
     let uniqueFolderList = filteredList.filter(
       (item, index) => filteredList.indexOf(item) === index
@@ -294,7 +328,7 @@ export class AdministrativeDocumentManager {
         filteredList.push(folderList[counter].replace("\t", ""));
       }
       await this.nextPage.click();
-      await this.loader.waitFor({ state: "hidden" });
+      await this.waitForLoaderToHide();
     }
     let actualFolderValue = filteredList.filter(
       (item, index) => filteredList.indexOf(item) === index
@@ -310,19 +344,19 @@ export class AdministrativeDocumentManager {
     await this.page
       .getByTitle(this.categoryOptions[this.randomCategory])
       .click();
-    await this.loader.waitFor({ state: "hidden" });
+    await this.waitForLoaderToHide();
   }
 
-  async uploadFileNWithinFolderView(filePath) {
+  async uploadFileNWithinFolderView(filePath: string) {
     await this.uploadInput.setInputFiles(filePath);
     await this.uploadModalUploadButton.click();
-    await this.loader.waitFor();
-    await this.loader.waitFor({ state: "hidden" });
+    await this.waitForLoaderToShow();
+    await this.waitForLoaderToHide();
   }
 
   async searchInListView(fileName: string) {
     await this.search.fill(fileName);
-    await this.loader.waitFor({ state: "hidden" });
+    await this.waitForLoaderToHide();
   }
 
   async validateSearchInListView(fileName: string) {
@@ -335,7 +369,7 @@ export class AdministrativeDocumentManager {
         (element) => element.trim() !== "" && !element.includes("\t")
       );
       await this.nextPage.click();
-      await this.loader.waitFor({ state: "hidden" });
+      await this.waitForLoaderToHide();
     }
     let actualFileName = filteredFileNameList.filter(
       (item, index) => filteredFileNameList.indexOf(item) === index
@@ -347,7 +381,7 @@ export class AdministrativeDocumentManager {
 
   async noDataSearchInListView() {
     await this.search.fill(this.noDataSearchValue);
-    await this.loader.waitFor({ state: "hidden" });
+    await this.waitForLoaderToHide();
   }
 
   async validateNoDataSearchInListView() {
@@ -390,8 +424,8 @@ export class AdministrativeDocumentManager {
       .locator("div")
       .click();
     await this.uploadModalUploadButton.click();
-    await this.loader.waitFor();
-    await this.loader.waitFor({ state: "hidden" });
+    await this.waitForLoaderToShow();
+    await this.waitForLoaderToHide();
   }
 
   async validateImageIcon() {
@@ -464,8 +498,8 @@ export class AdministrativeDocumentManager {
       await this.page
         .locator("//*[@title='" + recordsPerPageValue + " / page']")
         .click();
-      await this.loader.waitFor();
-      await this.loader.waitFor({ state: "hidden" });
+      await this.waitForLoaderToShow();
+      await this.waitForLoaderToHide();
       let expectedPageCount = Math.ceil(
         Number(totalItemsCount) / Number(recordsPerPageValue)
       );
@@ -485,7 +519,7 @@ export class AdministrativeDocumentManager {
       (element) => element.trim() !== "" && !element.includes("\t")
     );
     await this.nextPage.click();
-    await this.loader.waitFor({ state: "hidden" });
+    await this.waitForLoaderToHide();
     expect(
       filteredFileNameList[0],
       "Search in list view is not as expected"
@@ -535,8 +569,8 @@ export class AdministrativeDocumentManager {
   }
 
   async validatePreviousPageEnabled() {
-    await this.loader.waitFor();
-    await this.loader.waitFor({ state: "hidden" });
+    await this.waitForLoaderToShow();
+    await this.waitForLoaderToHide();
     expect(
       this.previousPage.isEnabled(),
       "Previous page button is not enabled"
@@ -676,9 +710,9 @@ export class AdministrativeDocumentManager {
     ).toMatch(this.categoryOptions[this.randomCategory]);
   }
 
-  async validateEditModalDocumentHeading() {
+  async validateModalDocumentHeading() {
     await expect(
-      this.editModalDocumentHeading,
+      this.modalDocumentHeading,
       "Heading of the document of the edit modal is not as expected"
     ).toBeVisible();
   }
@@ -701,7 +735,7 @@ export class AdministrativeDocumentManager {
     await this.cancelButton.click();
   }
 
-  async validateEditModalIsClosed() {
+  async validateModalIsClosed() {
     await expect(this.cancelButton, "Edit modal is not closed").toBeHidden();
   }
 
@@ -733,6 +767,167 @@ export class AdministrativeDocumentManager {
     for (let counter = 0; counter < folderList.length - 1; counter++) {
       filteredList.push(folderList[counter].replace("\t", ""));
     }
-    console.log(filteredList);
+    await this.loader.first().waitFor();
+    await this.waitForLoaderToHide();
+    expect(filteredList[0], "Folder is not displayed as edited").toEqual(
+      this.categoryOptions[this.randomCategory]
+    );
+  }
+
+  async validateUpdateToastMessage() {
+    expect(
+      await this.alert.innerText(),
+      "Update success toast message is not as expected"
+    ).toEqual("Success\nDocument updated successfully");
+  }
+
+  async clickOnDeleteButton() {
+    this.deleteButton.click();
+  }
+
+  async validateDeleteModalHeading() {
+    await expect(
+      this.deleteModalHeading,
+      "Delete modal heading is not visible"
+    ).toBeVisible();
+  }
+
+  async validateDeleteConfirmText() {
+    expect(await this.deleteModalContent.innerText()).toEqual(
+      "Are you sure you want to delete " + this.firstRecordFileName + "?"
+    );
+  }
+
+  async validateConfirmButtonVisible() {
+    await expect(
+      this.confirmButton,
+      "Confirm button is not visible"
+    ).toBeVisible();
+  }
+
+  async validateBackgroundColourOfConfirmButton() {
+    await expect(
+      this.updateButton,
+      "Background colour of the confirm button in delete modal is not as expected"
+    ).toHaveAttribute("background-color", "rgb(219, 44, 102)");
+  }
+
+  async clickOnConfirmButton() {
+    await this.confirmButton.click();
+  }
+
+  async waitForLoaderToShow() {
+    await this.loader.waitFor();
+  }
+
+  async waitForLoaderToHide() {
+    await this.loader.waitFor({ state: "hidden" });
+  }
+
+  async validateDeleteToastMessage() {
+    expect(
+      await this.alert.innerText(),
+      "Delete success toast message is not as expected"
+    ).toEqual("Success\nFile deleted successfully");
+  }
+
+  async validateHelpTextOnDragAndDrop() {
+    await expect(
+      this.helpTextDragAndDrop,
+      "Help text for drag and drop is not visible"
+    ).toBeVisible();
+  }
+
+  async dragAndDropFile() {
+    // Read your file into a buffer.
+    const buffer = readFileSync("./Sample.pdf");
+
+    // Create the DataTransfer and File
+    const dataTransfer = await this.page.evaluateHandle((data) => {
+      const dt = new DataTransfer();
+      // Convert the buffer to a hex array
+      const file = new File([data.toString("hex")], "Sample.pdf", {
+        type: "application/pdf",
+      });
+      dt.items.add(file);
+      return dt;
+    }, buffer);
+
+    // Now dispatch
+    await this.page.dispatchEvent("[data-testid='empty-detail']", "drop", {
+      dataTransfer,
+    });
+  }
+
+  async openUploadModal(filePath: string) {
+    await this.uploadInput.setInputFiles(filePath);
+  }
+
+  async validateFileNameInUploadModal(fileName: string) {
+    expect(
+      await this.fileNameInUploadModal.innerText(),
+      "File name is not displayed in upload modal"
+    ).toMatch(fileName);
+  }
+
+  async validateHeadingInUploadModal() {
+    await expect(
+      this.uploadModalHeading,
+      "Heading of the upload modal is not as expected"
+    ).toBeVisible();
+  }
+
+  async validateSubHeadingInUploadModal() {
+    await expect(
+      this.uploadModalSubHeading,
+      "Sub heading of the upload modal is not as expected"
+    ).toBeVisible();
+  }
+
+  async validateNoDefaultFolderSelected() {
+    expect(
+      await this.uploadCategory.innerText(),
+      "By default no folder selected state is invalid"
+    ).toEqual("Select a folder");
+  }
+
+  async validateXButtonToRemoveDocument() {
+    await expect(
+      this.xButtonForDocument,
+      "X button is not visible for document"
+    ).toBeVisible();
+  }
+
+  async removeFile() {
+    await this.xButtonForDocument.click();
+  }
+
+  async validateFileRemoved(fileName: string) {
+    await expect(
+      this.fileNameInUploadModal,
+      "File is not removed"
+    ).toBeHidden();
+  }
+
+  async validateUploadButtonDisabled() {
+    await expect(
+      this.uploadButton,
+      "Upload button is not disabled"
+    ).toBeDisabled();
+  }
+
+  async validateUploadButtonEnabled() {
+    await expect(
+      this.uploadButton,
+      "Upload button is not enabled"
+    ).toBeEnabled();
+  }
+
+  async selectRandomFolder() {
+    await this.uploadCategory.click();
+    await this.page
+      .getByTitle(this.categoryOptions[this.randomCategory])
+      .locator("div")
+      .click();
   }
 }
