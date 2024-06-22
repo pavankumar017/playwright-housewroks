@@ -67,6 +67,19 @@ export class AdministrativeDocumentManager {
   readonly uploadModalSubHeading: Locator;
   readonly xButtonForDocument: Locator;
   readonly uploadButton: Locator;
+  readonly progressBar: Locator;
+  readonly progressBarText: Locator;
+  readonly progressBarDetailsHeading: Locator;
+  readonly fileUploadProgressStatus: Locator;
+  readonly uploadCategoryInput: Locator;
+  readonly progressBarRound: Locator;
+  readonly exclamationMark: Locator;
+  readonly successMark: Locator;
+  readonly uploadingText: Locator;
+  readonly deleteIcon: Locator;
+  readonly uploadFailedText: Locator;
+  readonly tryAgainButton: Locator;
+  readonly cancelAllUploadsButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -76,6 +89,9 @@ export class AdministrativeDocumentManager {
     this.heading = this.page.getByRole("heading", { name: "Document Manager" });
     this.noPreviewText = this.page.getByText("No preview available");
     this.uploadCategory = this.page.locator('[data-testid="folder"]');
+    this.uploadCategoryInput = this.page.locator(
+      '[data-testid="folder"] input'
+    );
     this.categoryOptions = ["Inbox", "Audit", "Education", "Administrative"];
     this.uploadModalUploadButton = this.page
       .getByTestId("upload-modal")
@@ -147,7 +163,7 @@ export class AdministrativeDocumentManager {
     this.editModalHelpText = this.page.getByText(
       "Please select a folder to add the selected document(s)."
     );
-    this.modalDocumentHeading = this.page.getByText("SELECTED DOCUMENT(S)");
+    this.modalDocumentHeading = this.page.getByText("UPLOADED DOCUMENT(S)");
     this.editFileName = this.page.getByTestId("edit-file");
     this.cancelButton = this.page.getByRole("button", { name: "Cancel" });
     this.alert = this.page.locator("//*[@role='alert']");
@@ -171,6 +187,26 @@ export class AdministrativeDocumentManager {
     this.uploadButton = this.page
       .getByTestId("upload-modal")
       .getByRole("button", { name: "Upload" });
+
+    this.progressBar = this.page.getByTestId("upload-status");
+    this.progressBarText = this.page.getByTestId("upload-status");
+    this.progressBarDetailsHeading = this.page.getByRole("heading", {
+      name: "files uploaded",
+    });
+    this.fileUploadProgressStatus = this.page.locator(
+      "[class='absolute upload-file-count']"
+    );
+    this.editModalHeading = this.page.getByRole("heading", {
+      name: "file selected document(s)",
+    });
+    this.progressBarRound = this.page.getByRole("progressbar");
+    this.exclamationMark = this.page.getByTestId("upload-status-error-icon");
+    this.successMark = this.page.getByTestId("upload-status-success-icon");
+    this.uploadingText = this.page.getByText("Uploading...");
+    this.deleteIcon = this.page.locator("[data-testid*='cancel']");
+    this.uploadFailedText = this.page.getByText("Uploading failed");
+    this.tryAgainButton = this.page.getByText("Try Again");
+    this.cancelAllUploadsButton = this.page.getByText("Cancel all uploads");
   }
 
   formatDateToMMDDYYYY() {
@@ -260,6 +296,12 @@ export class AdministrativeDocumentManager {
   async searchInFolderCategory() {
     await this.documentCategory.click();
     await this.documentCategorySearch.fill(
+      this.categoryOptions[this.randomCategory]
+    );
+  }
+
+  async searchInFolderCategoryInEdit() {
+    await this.uploadCategoryInput.fill(
       this.categoryOptions[this.randomCategory]
     );
   }
@@ -512,7 +554,6 @@ export class AdministrativeDocumentManager {
 
   async validateDefaultSort(fileName: string) {
     let filteredFileNameList: string[] = [];
-    let pageCount = await this.pageNumberCount.innerText();
     let tableData = await this.table.innerText();
     let allRecordsArray = tableData.split("\n");
     filteredFileNameList = allRecordsArray.filter(
@@ -538,6 +579,8 @@ export class AdministrativeDocumentManager {
   }
 
   async validatePDFPreview() {
+    await this.waitForLoaderToShow();
+    await this.waitForLoaderToHide();
     await expect(this.pdfPreview, "PDF preview is not displayed").toBeVisible();
   }
 
@@ -617,6 +660,7 @@ export class AdministrativeDocumentManager {
   async clickOnFullScreen() {
     await this.fullScreen.click();
   }
+
   async validateExitFullScreenDisplayed() {
     expect(
       await this.fullScreen.innerText(),
@@ -661,7 +705,7 @@ export class AdministrativeDocumentManager {
   }
 
   async validateListViewDisplayed() {
-    await expect(this.uploadInput, "List view is not displayed").toBeVisible();
+    await expect(this.search, "List view is not displayed").toBeVisible();
   }
 
   async clickOnDownload() {
@@ -767,7 +811,7 @@ export class AdministrativeDocumentManager {
     for (let counter = 0; counter < folderList.length - 1; counter++) {
       filteredList.push(folderList[counter].replace("\t", ""));
     }
-    await this.loader.first().waitFor();
+    await this.waitForLoaderToShow();
     await this.waitForLoaderToHide();
     expect(filteredList[0], "Folder is not displayed as edited").toEqual(
       this.categoryOptions[this.randomCategory]
@@ -817,11 +861,11 @@ export class AdministrativeDocumentManager {
   }
 
   async waitForLoaderToShow() {
-    await this.loader.waitFor();
+    await this.loader.first().waitFor();
   }
 
   async waitForLoaderToHide() {
-    await this.loader.waitFor({ state: "hidden" });
+    await this.loader.first().waitFor({ state: "hidden" });
   }
 
   async validateDeleteToastMessage() {
@@ -929,5 +973,147 @@ export class AdministrativeDocumentManager {
       .getByTitle(this.categoryOptions[this.randomCategory])
       .locator("div")
       .click();
+  }
+
+  async validateProgressBarDisplayed() {
+    await expect(
+      this.progressBar,
+      "Progress bar is not displayed"
+    ).toBeVisible();
+    await expect(
+      this.progressBarText,
+      "Progress bar text is incorrect"
+    ).toBeVisible();
+  }
+
+  async clickOnProgressBar() {
+    await this.progressBar.click();
+  }
+
+  async validateProgressBarHeading(noOfFiles: string) {
+    expect(
+      await this.progressBarDetailsHeading.innerText(),
+      "Heading of the upload progress bar is not as expected"
+    ).toEqual(noOfFiles + " files uploaded");
+  }
+
+  async validateFileNameInProgressBarDetails(filePath: string[]) {
+    for (let iterator = 0; iterator < filePath.length; iterator++) {
+      await expect(
+        this.page.locator("article").getByText(filePath[iterator]),
+        "File name is not displayed in upload progress bar"
+      ).toBeVisible();
+    }
+  }
+
+  async validateFolderInProgressBarDetails(noOfFilesUploaded: number) {
+    await expect(
+      this.page
+        .locator("article")
+        .getByText(this.categoryOptions[this.randomCategory]),
+      "Folder name is not displayed in upload progress bar"
+    ).toHaveCount(noOfFilesUploaded);
+  }
+
+  async uploadLargeFiles(filePath: string[]) {
+    await this.uploadInput.setInputFiles(filePath);
+    await this.uploadCategory.click();
+    await this.page
+      .getByTitle(this.categoryOptions[this.randomCategory])
+      .locator("div")
+      .click();
+    await this.uploadModalUploadButton.click();
+  }
+
+  async validateProgressStatus(noOfFilesUploaded: string) {
+    expect(await this.fileUploadProgressStatus.innerText()).toEqual(
+      "0/" + noOfFilesUploaded
+    );
+  }
+
+  async validateInProgressStatusColour() {
+    await expect(
+      this.progressBar,
+      "Background colour of in progress status is not as expected"
+    ).toHaveAttribute("background-color", "rgba(47, 84, 235)");
+  }
+
+  async validateEditModalDocumentHeading() {
+    await expect(
+      this.editModalHeading,
+      "Heading of the document of the edit modal is not as expected"
+    ).toBeVisible();
+  }
+
+  async validateProgressBarRoundDisplayed() {
+    await expect(
+      this.progressBarRound,
+      "Progress bar inside upload detail modal is not displayed"
+    ).toBeVisible();
+  }
+
+  async validateExclamationMark() {
+    await expect(
+      this.exclamationMark,
+      "Exclamation mark is not displayed"
+    ).toBeVisible();
+  }
+
+  async validateSuccessMark() {
+    await expect(
+      this.successMark,
+      "Success mark is not displayed"
+    ).toBeVisible();
+  }
+
+  async validateInProgressBarHeading(noOfFiles: string) {
+    await expect(
+      this.page.getByText("Uploading " + noOfFiles + " files"),
+      "Heading of the in progress upload bar is not as expected"
+    ).toBeVisible();
+  }
+
+  async validateUploadingText() {
+    await expect(
+      this.uploadingText,
+      "Uploading... text is not visible"
+    ).toBeVisible();
+  }
+
+  async clickOnDeleteIcon() {
+    await this.deleteIcon.click();
+  }
+
+  async validateUploadStopped() {
+    await expect(this.uploadFailedText, "Upload did not stop").toBeVisible();
+  }
+
+  async clickOnTryAgain() {
+    this.tryAgainButton.click();
+  }
+
+  async validateCancelAllDisplayed() {
+    await expect(
+      this.cancelAllUploadsButton,
+      "Cancel all uploads button is not displayed"
+    ).toBeVisible();
+  }
+
+  async validateSuccessText() {
+    expect(
+      await this.progressBar.innerText(),
+      "Files uploaded successfully is not displayed on successful upload"
+    ).toEqual("Files uploaded successfully");
+  }
+
+  async clickOnCancelAllUploads() {
+    await this.cancelAllUploadsButton.click();
+  }
+
+  async validateAllFileUploadStops(noOfFiles: number) {
+    await expect(
+      this.tryAgainButton,
+      "All file uploads are not stopped"
+    ).toHaveCount(noOfFiles);
   }
 }

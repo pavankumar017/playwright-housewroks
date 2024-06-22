@@ -271,6 +271,7 @@ test("Validate default sort", async ({ page, baseURL }) => {
   await sideMenu.openAdministrativeDocumentManager();
   const administrativeDocumentManager = new AdministrativeDocumentManager(page);
   await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.hoverOnIIconInListView();
   await administrativeDocumentManager.validateIIconData();
   await administrativeDocumentManager.validateDefaultSort("Sample.pdf");
 });
@@ -472,6 +473,7 @@ test("Validate exit full screen for PDF", async ({ page, baseURL }) => {
   await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
   await administrativeDocumentManager.clickOnFirstRecord();
   await administrativeDocumentManager.clickOnFullScreen();
+  await administrativeDocumentManager.clickOnFullScreen();
   await administrativeDocumentManager.validateEnterFullScreenDisplayed();
   await administrativeDocumentManager.validateListViewDisplayed();
 });
@@ -558,7 +560,7 @@ test("Validate heading of the selected documents in edit modal", async ({
   await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
   await administrativeDocumentManager.clickOnFirstRecord();
   await administrativeDocumentManager.clickOnEditButton();
-  await administrativeDocumentManager.validateModalDocumentHeading();
+  await administrativeDocumentManager.validateEditModalDocumentHeading();
 });
 
 test.skip("Validate colour of the file name in eit modal", async ({
@@ -624,6 +626,21 @@ test.skip("Validate background colour of the update button in edit modal", async
   await administrativeDocumentManager.clickOnFirstRecord();
   await administrativeDocumentManager.clickOnEditButton();
   await administrativeDocumentManager.validateBackgroundColourOfUpdateButton();
+});
+
+test("Validate search in the folder name in edit modal ", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./Sample.pdf");
+  await administrativeDocumentManager.clickOnFirstRecord();
+  await administrativeDocumentManager.clickOnEditButton();
+  await administrativeDocumentManager.searchInFolderCategoryInEdit();
+  await administrativeDocumentManager.validateSearchInFolderCategory();
 });
 
 test("Validate folder value on changing folder in list view", async ({
@@ -890,6 +907,19 @@ test("Validate upload button should be disabled be default", async ({
   await administrativeDocumentManager.validateUploadButtonDisabled();
 });
 
+test("Validate search in the folder name in upload modal ", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.openUploadModal("./image1.png");
+  await administrativeDocumentManager.searchInFolderCategoryInEdit();
+  await administrativeDocumentManager.validateSearchInFolderCategory();
+});
+
 test("Validate upload button should be enabled after selecting the folder", async ({
   page,
   baseURL,
@@ -901,4 +931,228 @@ test("Validate upload button should be enabled after selecting the folder", asyn
   await administrativeDocumentManager.openUploadModal("./image1.png");
   await administrativeDocumentManager.selectRandomFolder();
   await administrativeDocumentManager.validateUploadButtonEnabled();
+});
+
+test("Validate progress bar is displayed on successful upload of file(s)", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./image1.png");
+  await administrativeDocumentManager.validateProgressBarDisplayed();
+});
+
+test("Validate heading of expanded progress bar is on successful upload of file(s)", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadMultipleFiles([
+    "./image1.png",
+    "./image2.jpeg",
+    "./image3.jpg",
+  ]);
+  await administrativeDocumentManager.clickOnProgressBar();
+  await administrativeDocumentManager.validateProgressBarHeading("3");
+});
+
+test("Validate file name on the upload progress bar", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadMultipleFiles([
+    "./image1.png",
+    "./image2.jpeg",
+    "./image3.jpg",
+  ]);
+  await administrativeDocumentManager.clickOnProgressBar();
+  await administrativeDocumentManager.validateFileNameInProgressBarDetails([
+    "image1.png",
+    "image2.jpeg",
+    "image3.jpg",
+  ]);
+});
+
+test("Validate folder on the upload progress bar", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadMultipleFiles([
+    "./image1.png",
+    "./image2.jpeg",
+    "./image3.jpg",
+  ]);
+  await administrativeDocumentManager.clickOnProgressBar();
+  await administrativeDocumentManager.validateFolderInProgressBarDetails(3);
+});
+
+test("Validate progress status on the upload progress bar", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadLargeFiles(["./23mb.png"]);
+  await administrativeDocumentManager.validateProgressStatus("1");
+});
+
+test.skip("Validate colour of in progress status on the upload progress bar", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadLargeFiles(["./23mb.png"]);
+  await administrativeDocumentManager.validateInProgressStatusColour();
+});
+
+test("Validate progress bar inside upload details should be displayed", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadLargeFiles(["./23mb.png"]);
+  await administrativeDocumentManager.validateProgressBarRoundDisplayed();
+});
+
+test("Validate exclamation mark should be displayed for upload failure", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadLargeFiles(["./23.png"]);
+  await administrativeDocumentManager.validateExclamationMark();
+});
+
+test("Validate success mark should be displayed for successful upload", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./image1.png");
+  await administrativeDocumentManager.validateSuccessMark();
+});
+
+test("Validate heading of progress bar detail when upload is in progress", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadLargeFiles(["./23mb.png"]);
+  await administrativeDocumentManager.clickOnProgressBar();
+  await administrativeDocumentManager.validateInProgressBarHeading("1");
+});
+
+test("Validate uploading text displayed when upload is in progress", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadLargeFiles(["./23mb.png"]);
+  await administrativeDocumentManager.clickOnProgressBar();
+  await administrativeDocumentManager.validateUploadingText();
+});
+
+test("Validate uploading stops on click delete icon", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadLargeFiles(["./23mb.png"]);
+  await administrativeDocumentManager.clickOnProgressBar();
+  await administrativeDocumentManager.clickOnDeleteIcon();
+  await administrativeDocumentManager.validateUploadStopped();
+});
+
+test("Validate uploading restarts on click try again", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadLargeFiles(["./23mb.png"]);
+  await administrativeDocumentManager.clickOnProgressBar();
+  await administrativeDocumentManager.clickOnDeleteIcon();
+  await administrativeDocumentManager.validateUploadStopped();
+  await administrativeDocumentManager.clickOnTryAgain();
+  await administrativeDocumentManager.validateUploadingText();
+});
+
+test("Validate both collapsed and expanded views are displayed respectively on click progress bar", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadLargeFiles(["./23mb.png"]);
+  await administrativeDocumentManager.clickOnProgressBar();
+  await administrativeDocumentManager.validateCancelAllDisplayed();
+  await administrativeDocumentManager.clickOnProgressBar();
+  await administrativeDocumentManager.validateProgressBarDisplayed();
+});
+
+test("Validate success text message on progress bar on successful upload", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadFileFromGivenPath("./image1.png");
+  await administrativeDocumentManager.validateSuccessText();
+});
+
+test("Validate upload stops for all files on click cancel all uploads", async ({
+  page,
+  baseURL,
+}) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openAdministrativeDocumentManager();
+  const administrativeDocumentManager = new AdministrativeDocumentManager(page);
+  await administrativeDocumentManager.uploadLargeFiles(["./23mb.png"]);
+  await administrativeDocumentManager.clickOnProgressBar();
+  await administrativeDocumentManager.clickOnCancelAllUploads();
+  await administrativeDocumentManager.validateAllFileUploadStops(1);
 });
