@@ -2,7 +2,7 @@ import { Locator, Page, expect } from "@playwright/test";
 import { randomInt } from "crypto";
 import { names, uniqueNamesGenerator } from "unique-names-generator";
 
-export class contactPeopleFactoryModel {
+export class ContactPeople {
   readonly page: Page;
   readonly randomFirstName: string;
   readonly randomLastName: string;
