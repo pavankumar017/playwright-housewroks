@@ -1,7 +1,7 @@
 import { test } from "@playwright/test";
 import { CreatePatient } from "../locators/create-patient";
 import { PatientMaster } from "../locators/patient-master";
-import { PatientDashboard } from "../locators/patient_dashboard";
+import { PatientDetails } from "../locators/patient_details";
 import { SideMenu } from "../locators/side-menu";
 
 test("User should be able to open create patient from side menu", async ({
@@ -101,7 +101,7 @@ test("No data should be displayed when there are no patients available for selec
   await createPatient.validateNoDataFound();
 });
 
-test.skip("User should be able to clear data from all the fields", async ({
+test("User should be able to clear data from all the fields", async ({
   page,
   baseURL,
 }) => {
@@ -109,12 +109,9 @@ test.skip("User should be able to clear data from all the fields", async ({
   const patientMaster = new PatientMaster(page);
   await patientMaster.clickOnCreateButton();
   const createPatient = new CreatePatient(page);
-  await createPatient.enterFirstName();
-  await createPatient.enterMiddleName();
-  await createPatient.enterLastName();
-  await createPatient.selectDateOfBirth();
+  await createPatient.enterDataIntoMandatoryFields();
+  await createPatient.enterDataIntoOptionalFields();
   await createPatient.clickOnClearButton();
-  await createPatient.validateCheckButtonDisabled();
   await createPatient.validateAllFieldsAreEmpty();
 });
 
@@ -210,8 +207,7 @@ test("Match score should be 1 for exact match", async ({ page, baseURL }) => {
   await createPatient.waitTillCreateButtonEnabled();
   await createPatient.clickOnCreateButton();
   await createPatient.validateSuccessfulCreation();
-  const sideMenu = new SideMenu(page);
-  await sideMenu.openCreateFromSideMenu();
+  await patientMaster.clickOnCreateButton();
   await createPatient.enterFirstName();
   await createPatient.enterMiddleName();
   await createPatient.enterLastName();
@@ -694,7 +690,7 @@ test("Default pagination to be set for 10", async ({ page, baseURL }) => {
   await createPatient.validateDefaultPagination();
 });
 
-test("On clicking on Patient User should be navigated to Patient Dashboard page ", async ({
+test("On clicking on Patient User should be navigated to Patient Details page ", async ({
   page,
   baseURL,
 }) => {
@@ -705,8 +701,8 @@ test("On clicking on Patient User should be navigated to Patient Dashboard page 
   await createPatient.enterDOBProvided("01/01/2024");
   await createPatient.clickOnCheckButton();
   await createPatient.openRandomPatient();
-  const patientDashboard = new PatientDashboard(page);
-  await patientDashboard.validatePatientDashboardPage();
+  const patientDetails = new PatientDetails(page);
+  await patientDetails.validatePatientDetailsPage();
 });
 
 test("Patient master should be displayed on click back button", async ({
