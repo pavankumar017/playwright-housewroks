@@ -11,6 +11,8 @@ export class SideMenu {
   readonly administrativeDocumentManager: Locator;
   readonly userManagement: Locator;
   readonly reviewMasters: Locator;
+  readonly contactSideMenu: Locator;
+  readonly people: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -30,6 +32,10 @@ export class SideMenu {
     });
     this.reviewMasters = this.page.getByRole("link", {
       name: "Review Masters",
+    });
+    this.contactSideMenu = this.page.getByTestId("contacts-menu-icon");
+    this.people = this.page.getByRole("link", {
+      name: "People",
     });
   }
 
@@ -80,5 +86,11 @@ export class SideMenu {
     expect(this.userManagement).toBeVisible();
     expect(this.reviewMasters).toBeVisible();
     expect(this.administrativeDocumentManager).toBeVisible();
+  }
+
+  async openContactPerson() {
+    await this.contactSideMenu.hover();
+    await this.people.waitFor();
+    await this.people.click();
   }
 }
