@@ -1,5 +1,7 @@
+/// <reference lib="dom" />
 import { Locator, Page, expect } from "@playwright/test";
 import { randomInt } from "crypto";
+import { readFileSync } from "fs";
 
 export class AdministrativeDocumentManager {
   readonly page: Page;
@@ -11,7 +13,7 @@ export class AdministrativeDocumentManager {
   readonly uploadModalUploadButton: Locator;
   readonly uploadInput: Locator;
   readonly search: Locator;
-  readonly unsupportedFileSearch: Locator;
+  readonly unsupportedFile: Locator;
   readonly openUnsupportedSearchedFile: Locator;
   readonly folderLabel: Locator;
   readonly documentCategorySearch: Locator;
@@ -21,7 +23,7 @@ export class AdministrativeDocumentManager {
   readonly nextPage: Locator;
   randomCategory: number;
   readonly loader: Locator;
-  readonly fileName: string;
+  firstRecordFileName: string;
   readonly noDataListView: Locator;
   readonly noDataSearchValue: string;
   readonly emptyPreview: Locator;
@@ -30,6 +32,54 @@ export class AdministrativeDocumentManager {
   readonly PDFFilePath: string;
   readonly firstRecordName: Locator;
   readonly firstRecordIcon: Locator;
+  readonly iIcon: Locator;
+  readonly tooltip: Locator;
+  readonly activePageNumber: Locator;
+  readonly totalItems: Locator;
+  readonly recordsPerPage: Locator;
+  readonly paginationOptions: Locator;
+  readonly imagePreview: Locator;
+  readonly pdfPreview: Locator;
+  readonly noDataSearchEmptyPreviewText: string;
+  expectedPageNumber: string;
+  readonly previousPage: Locator;
+  readonly highlightedRow: Locator;
+  readonly firstRow: Locator;
+  readonly iIconInPreview: Locator;
+  readonly fullScreen: Locator;
+  readonly downloadButton: Locator;
+  readonly fileNameFromPreview: Locator;
+  readonly editButton: Locator;
+  readonly updateButton: Locator;
+  readonly editModalHeading: Locator;
+  readonly editModalHelpText: Locator;
+  readonly modalDocumentHeading: Locator;
+  readonly editFileName: Locator;
+  readonly cancelButton: Locator;
+  readonly alert: Locator;
+  readonly deleteModalHeading: Locator;
+  readonly deleteButton: Locator;
+  readonly deleteModalContent: Locator;
+  readonly confirmButton: Locator;
+  readonly helpTextDragAndDrop: Locator;
+  readonly fileNameInUploadModal: Locator;
+  readonly uploadModalHeading: Locator;
+  readonly uploadModalSubHeading: Locator;
+  readonly xButtonForDocument: Locator;
+  readonly uploadButton: Locator;
+  readonly progressBar: Locator;
+  readonly progressBarText: Locator;
+  readonly progressBarDetailsHeading: Locator;
+  readonly fileUploadProgressStatus: Locator;
+  readonly uploadCategoryInput: Locator;
+  readonly progressBarRound: Locator;
+  readonly exclamationMark: Locator;
+  readonly successMark: Locator;
+  readonly uploadingText: Locator;
+  readonly deleteIcon: Locator;
+  readonly uploadFailedText: Locator;
+  readonly tryAgainButton: Locator;
+  readonly cancelAllUploadsButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -39,13 +89,16 @@ export class AdministrativeDocumentManager {
     this.heading = this.page.getByRole("heading", { name: "Document Manager" });
     this.noPreviewText = this.page.getByText("No preview available");
     this.uploadCategory = this.page.locator('[data-testid="folder"]');
+    this.uploadCategoryInput = this.page.locator(
+      '[data-testid="folder"] input'
+    );
     this.categoryOptions = ["Inbox", "Audit", "Education", "Administrative"];
     this.uploadModalUploadButton = this.page
       .getByTestId("upload-modal")
       .getByRole("button", { name: "Upload" });
     this.uploadInput = this.page.getByTestId("upload-patient-documents");
     this.search = this.page.getByPlaceholder("Search");
-    this.unsupportedFileSearch = this.page.getByText("README.md").first();
+    this.unsupportedFile = this.page.getByText("README.md").first();
     this.openUnsupportedSearchedFile = this.page
       .getByRole("cell", { name: "file-exclamation README.md" })
       .first();
@@ -63,7 +116,6 @@ export class AdministrativeDocumentManager {
     this.nextPage = this.page.locator("(//li[@title='Next Page'])");
     this.randomCategory = randomInt(this.categoryOptions.length - 1);
     this.loader = this.page.locator(".ant-spin");
-    this.fileName = "README.md";
     this.noDataListView = this.page.getByText("No document(s) uploaded");
     this.noDataSearchValue = "fhjgxzjvbgxzjkvgxzj";
     this.emptyPreview = this.page.getByTestId("empty-view");
@@ -74,6 +126,111 @@ export class AdministrativeDocumentManager {
     this.PDFFilePath = "./Sample.pdf";
     this.firstRecordName = this.page.locator("table tbody td").first();
     this.firstRecordIcon = this.page.locator("table tbody td span").first();
+    this.iIcon = this.page.locator("[data-icon='info-circle']");
+    this.tooltip = this.page.getByRole("tooltip");
+    this.activePageNumber = this.page.locator(
+      "[class*='ant-pagination-item-active']"
+    );
+    this.totalItems = this.page.getByText("item(s)");
+    this.recordsPerPage = this.page.locator(
+      "(//li[@title='Next Page'])/following-sibling::li[1]"
+    );
+    this.paginationOptions = this.page.getByRole("option");
+    this.imagePreview = this.page.locator("img[alt='document image']");
+    this.pdfPreview = this.page
+      .getByTestId("pdf-document")
+      .locator("canvas")
+      .first();
+    this.noDataSearchEmptyPreviewText =
+      "Document Manager\nDrag and drop your documents anywhere on this screen or click on ‘Upload’ button on top to upload.\nOrganise all your uploaded documents into relevant pre-defined folders.\nPreview, edit, download or delete your documents in just a click.";
+    this.previousPage = this.page.locator("(//li[@title='Previous Page'])");
+    this.highlightedRow = this.page
+      .locator("tbody [class*='ant-table-cell-row-hover']")
+      .first();
+    this.firstRow = this.table.locator("tr").first();
+    this.iIconInPreview = this.page.getByTestId("info");
+    this.fullScreen = this.page.locator(
+      "//*[@data-testid='fullscreen']/parent::div"
+    );
+    this.downloadButton = this.page.locator("[data-icon='download']");
+    this.fileNameFromPreview = this.page
+      .getByTestId("document-header")
+      .locator("span")
+      .first();
+    this.editButton = this.page.getByText("Edit");
+    this.updateButton = this.page.getByRole("button", { name: "Update" });
+    this.editModalHeading = this.page.locator("h4").getByText("Edit Folder");
+    this.editModalHelpText = this.page.getByText(
+      "Please select a folder to add the selected document(s)."
+    );
+    this.modalDocumentHeading = this.page.getByText("UPLOADED DOCUMENT(S)");
+    this.editFileName = this.page.getByTestId("edit-file");
+    this.cancelButton = this.page.getByRole("button", { name: "Cancel" });
+    this.alert = this.page.locator("//*[@role='alert']");
+    this.deleteModalHeading = this.page.getByText("Delete file");
+    this.deleteButton = this.page.getByText("Delete");
+    this.deleteModalContent = this.page.locator(".ant-modal-confirm-content");
+    this.confirmButton = this.page.getByRole("button", { name: "Confirm" });
+    this.helpTextDragAndDrop = this.page.getByText(
+      "Drop your files here to upload"
+    );
+    this.fileNameInUploadModal = this.page.locator(
+      "[data-testid*='rc-upload']"
+    );
+    this.uploadModalHeading = this.page
+      .locator("h4")
+      .getByText("Select a Folder");
+    this.uploadModalSubHeading = this.page.getByText(
+      "Please select a folder to add the selected document(s)."
+    );
+    this.xButtonForDocument = this.fileNameInUploadModal.locator("svg");
+    this.uploadButton = this.page
+      .getByTestId("upload-modal")
+      .getByRole("button", { name: "Upload" });
+
+    this.progressBar = this.page.getByTestId("upload-status");
+    this.progressBarText = this.page.getByTestId("upload-status");
+    this.progressBarDetailsHeading = this.page.getByRole("heading", {
+      name: "files uploaded",
+    });
+    this.fileUploadProgressStatus = this.page.locator(
+      "[class='absolute upload-file-count']"
+    );
+    this.editModalHeading = this.page.getByRole("heading", {
+      name: "file selected document(s)",
+    });
+    this.progressBarRound = this.page.getByRole("progressbar");
+    this.exclamationMark = this.page.getByTestId("upload-status-error-icon");
+    this.successMark = this.page.getByTestId("upload-status-success-icon");
+    this.uploadingText = this.page.getByText("Uploading...");
+    this.deleteIcon = this.page.locator("[data-testid*='cancel']");
+    this.uploadFailedText = this.page.getByText("Uploading failed");
+    this.tryAgainButton = this.page.getByText("Try Again");
+    this.cancelAllUploadsButton = this.page.getByText("Cancel all uploads");
+  }
+
+  formatDateToMMDDYYYY() {
+    let date = new Date();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // getMonth() is zero-based
+    const day = date.getDate().toString().padStart(2, "0");
+    const year = date.getFullYear();
+
+    return `${month}/${day}/${year}`;
+  }
+
+  getCurrentTime(): string {
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes: string = now.getMinutes().toString().padStart(2, "0");
+    const hrFormat = hours >= 12 ? "PM" : "AM";
+
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 12-hour clock
+
+    const formattedTime = `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")} ${hrFormat}`;
+    return formattedTime;
   }
 
   async validateAdministrativeDocumentManagerPage() {
@@ -106,13 +263,12 @@ export class AdministrativeDocumentManager {
       .locator("div")
       .click();
     await this.uploadModalUploadButton.click();
-    await this.loader.waitFor();
-    await this.loader.waitFor({ state: "hidden" });
+    await this.waitForLoaderToShow();
+    await this.waitForLoaderToHide();
   }
 
   async openUnsupportedFile() {
-    await this.search.fill(".md");
-    await this.unsupportedFileSearch.click();
+    await this.unsupportedFile.click();
     await this.openUnsupportedSearchedFile.click();
   }
 
@@ -144,6 +300,12 @@ export class AdministrativeDocumentManager {
     );
   }
 
+  async searchInFolderCategoryInEdit() {
+    await this.uploadCategoryInput.fill(
+      this.categoryOptions[this.randomCategory]
+    );
+  }
+
   async validateSearchInFolderCategory() {
     await expect(
       this.page.getByTitle(this.categoryOptions[this.randomCategory]),
@@ -164,8 +326,8 @@ export class AdministrativeDocumentManager {
         .locator("div")
         .click();
       await this.uploadModalUploadButton.click();
-      await this.loader.waitFor();
-      await this.loader.waitFor({ state: "hidden" });
+      await this.waitForLoaderToShow();
+      await this.waitForLoaderToHide();
     }
   }
 
@@ -182,7 +344,7 @@ export class AdministrativeDocumentManager {
         filteredList.push(folderList[counter].replace("\t", ""));
       }
       await this.nextPage.click();
-      await this.loader.waitFor({ state: "hidden" });
+      await this.waitForLoaderToHide();
     }
     let uniqueFolderList = filteredList.filter(
       (item, index) => filteredList.indexOf(item) === index
@@ -208,7 +370,7 @@ export class AdministrativeDocumentManager {
         filteredList.push(folderList[counter].replace("\t", ""));
       }
       await this.nextPage.click();
-      await this.loader.waitFor({ state: "hidden" });
+      await this.waitForLoaderToHide();
     }
     let actualFolderValue = filteredList.filter(
       (item, index) => filteredList.indexOf(item) === index
@@ -224,19 +386,19 @@ export class AdministrativeDocumentManager {
     await this.page
       .getByTitle(this.categoryOptions[this.randomCategory])
       .click();
-    await this.loader.waitFor({ state: "hidden" });
+    await this.waitForLoaderToHide();
   }
 
-  async uploadFileNWithinFolderView(filePath) {
+  async uploadFileNWithinFolderView(filePath: string) {
     await this.uploadInput.setInputFiles(filePath);
     await this.uploadModalUploadButton.click();
-    await this.loader.waitFor();
-    await this.loader.waitFor({ state: "hidden" });
+    await this.waitForLoaderToShow();
+    await this.waitForLoaderToHide();
   }
 
   async searchInListView(fileName: string) {
     await this.search.fill(fileName);
-    await this.loader.waitFor({ state: "hidden" });
+    await this.waitForLoaderToHide();
   }
 
   async validateSearchInListView(fileName: string) {
@@ -249,7 +411,7 @@ export class AdministrativeDocumentManager {
         (element) => element.trim() !== "" && !element.includes("\t")
       );
       await this.nextPage.click();
-      await this.loader.waitFor({ state: "hidden" });
+      await this.waitForLoaderToHide();
     }
     let actualFileName = filteredFileNameList.filter(
       (item, index) => filteredFileNameList.indexOf(item) === index
@@ -261,7 +423,7 @@ export class AdministrativeDocumentManager {
 
   async noDataSearchInListView() {
     await this.search.fill(this.noDataSearchValue);
-    await this.loader.waitFor({ state: "hidden" });
+    await this.waitForLoaderToHide();
   }
 
   async validateNoDataSearchInListView() {
@@ -273,6 +435,9 @@ export class AdministrativeDocumentManager {
       this.emptyPreview,
       "Empty preview is not visible"
     ).toBeVisible();
+    expect(await this.emptyPreview.innerText()).toEqual(
+      this.noDataSearchEmptyPreviewText
+    );
   }
 
   async validateDefaultPreview() {
@@ -291,5 +456,664 @@ export class AdministrativeDocumentManager {
       this.firstRecordIcon,
       "PDF file icon not displayed for PDF file"
     ).toHaveAttribute("data-testid", "pdf-icon");
+  }
+
+  async uploadMultipleFiles(filePath: string[]) {
+    await this.uploadInput.setInputFiles(filePath);
+    await this.uploadCategory.click();
+    await this.page
+      .getByTitle(this.categoryOptions[this.randomCategory])
+      .locator("div")
+      .click();
+    await this.uploadModalUploadButton.click();
+    await this.waitForLoaderToShow();
+    await this.waitForLoaderToHide();
+  }
+
+  async validateImageIcon() {
+    await expect(
+      this.firstRecordIcon,
+      "Image file icon not displayed for image file"
+    ).toHaveAttribute("data-testid", "image-icon");
+  }
+
+  async validateUnknownIcon() {
+    await expect(
+      this.firstRecordIcon,
+      "Image file icon not displayed for unsupported file"
+    ).toHaveAttribute("data-testid", "unknown");
+  }
+
+  async validateEllipsis(fileName: string) {
+    let ellipsis = this.page
+      .locator("[class*='ant-typography-single-line']")
+      .getByText(fileName);
+    expect(ellipsis, "Ellipsis is not displayed for long name").toBeVisible();
+  }
+
+  async hoverOnIIconInListView() {
+    await this.iIcon.first().hover();
+  }
+
+  async validateIIconData() {
+    let tooltipData = await this.tooltip.innerText();
+    let todayDate = this.formatDateToMMDDYYYY();
+    let currentTime = this.getCurrentTime();
+    let expectedTooltipData =
+      "Uploaded by Gogte, Rucheta on " + todayDate + " at " + currentTime;
+    expect(expectedTooltipData, "i icon data is not as expected").toMatch(
+      tooltipData
+    );
+  }
+
+  async navigateToNextPage() {
+    await this.nextPage.click();
+  }
+
+  async validateFirstPageIsActive() {
+    let activePageNumberValue = await this.activePageNumber.innerText();
+    expect(activePageNumberValue, "First page is not active").toBe("1");
+  }
+
+  async validateTotalItemsIsVisible() {
+    let regularExpression = /Total (\d+) item\(s\)/;
+    await expect(this.totalItems, "Total items are not visible").toBeVisible();
+    expect(
+      (await this.totalItems.innerText()).toString(),
+      "Total items text is incorrect"
+    ).toEqual(expect.stringMatching(regularExpression));
+  }
+
+  async validatePagination() {
+    await this.totalItems.isVisible();
+    let totalItemsText = (await this.totalItems.innerText()).toString();
+    let totalItemsTextArray = totalItemsText.split(" ");
+    let totalItemsCount = totalItemsTextArray[1];
+    let recordsPerPageOption = ["20", "50", "100"];
+    let expectedPageCount = Math.ceil(Number(totalItemsCount) / 10);
+    let actualPageCount = (await this.pageNumberCount.innerText()).toString();
+    expect(expectedPageCount.toString(), "Page count is incorrect").toEqual(
+      actualPageCount
+    );
+    for (const recordsPerPageValue of recordsPerPageOption) {
+      await this.recordsPerPage.click();
+      await this.page
+        .locator("//*[@title='" + recordsPerPageValue + " / page']")
+        .click();
+      await this.waitForLoaderToShow();
+      await this.waitForLoaderToHide();
+      let expectedPageCount = Math.ceil(
+        Number(totalItemsCount) / Number(recordsPerPageValue)
+      );
+      let actualPageCount = (await this.pageNumberCount.innerText()).toString();
+      expect(expectedPageCount.toString(), "Page count is incorrect").toEqual(
+        actualPageCount
+      );
+    }
+  }
+
+  async validateDefaultSort(fileName: string) {
+    let filteredFileNameList: string[] = [];
+    let tableData = await this.table.innerText();
+    let allRecordsArray = tableData.split("\n");
+    filteredFileNameList = allRecordsArray.filter(
+      (element) => element.trim() !== "" && !element.includes("\t")
+    );
+    await this.nextPage.click();
+    await this.waitForLoaderToHide();
+    expect(
+      filteredFileNameList[0],
+      "Search in list view is not as expected"
+    ).toMatch(fileName);
+  }
+
+  async validateImagePreview() {
+    await expect(
+      this.imagePreview,
+      "Image preview is not displayed"
+    ).toBeVisible();
+  }
+
+  async openMentionedFile(fileName: string) {
+    this.page.getByText(fileName).first().click();
+  }
+
+  async validatePDFPreview() {
+    await this.waitForLoaderToShow();
+    await this.waitForLoaderToHide();
+    await expect(this.pdfPreview, "PDF preview is not displayed").toBeVisible();
+  }
+
+  async changeActivePage(expectedPageNumber: string) {
+    await this.nextPage.waitFor();
+    if (!this.nextPage.isEnabled()) {
+      console.log(
+        "Only one page exists in administrative document manager list view"
+      );
+    } else {
+      await this.nextPage.click();
+      await this.page.waitForTimeout(2000);
+    }
+  }
+
+  async validateActivePage(expectedPageNumber: string) {
+    let activePageNumberValue = await this.activePageNumber.innerText();
+    expect(activePageNumberValue, "First page is not active").toBe(
+      expectedPageNumber
+    );
+  }
+
+  async validatePreviousPageDisabled() {
+    await this.previousPage.waitFor();
+    expect(
+      this.previousPage.isDisabled(),
+      "Previous page button is not disabled"
+    ).toBeTruthy();
+  }
+
+  async validatePreviousPageEnabled() {
+    await this.waitForLoaderToShow();
+    await this.waitForLoaderToHide();
+    expect(
+      this.previousPage.isEnabled(),
+      "Previous page button is not enabled"
+    ).toBeTruthy();
+  }
+
+  async goToLastPage() {
+    await this.pageNumberCount.click();
+  }
+
+  async validateNextPageDisabled() {
+    expect(
+      this.nextPage.isDisabled(),
+      "Previous page button is not disabled"
+    ).toBeTruthy();
+  }
+
+  async validateNextPageEnabled() {
+    expect(
+      await this.nextPage.isEnabled(),
+      "Next page button is not enabled"
+    ).toBeTruthy();
+  }
+
+  async hoverOnFirstRecord() {
+    await this.firstRow.hover();
+  }
+
+  async clickOnFirstRecord() {
+    await this.firstRow.click();
+  }
+
+  async validateHighlightedRow() {
+    await expect(
+      this.firstRow,
+      "Background colour on hover any row is not as expected"
+    ).toHaveAttribute("background-color", "rgba(242, 246, 255)");
+  }
+
+  async hoverOnIIconInPreview() {
+    await this.iIconInPreview.hover();
+  }
+
+  async clickOnFullScreen() {
+    await this.fullScreen.click();
+  }
+
+  async validateExitFullScreenDisplayed() {
+    expect(
+      await this.fullScreen.innerText(),
+      "Exit fullscreen is not displayed"
+    ).toEqual("Exit Fullscreen");
+  }
+
+  async validateEnterFullScreenDisplayed() {
+    expect(
+      await this.fullScreen.innerText(),
+      "Fullscreen is not displayed"
+    ).toEqual("Fullscreen");
+  }
+
+  async validateListViewNotDisplayed() {
+    await expect(this.uploadInput, "List view is displayed").toBeHidden();
+  }
+
+  async validateDownloadButtonVisible() {
+    await expect(
+      this.downloadButton,
+      "Download button is not displayed"
+    ).toBeVisible();
+  }
+
+  async getFileNameOfFirstRecord() {
+    let filteredFileNameList: string[] = [];
+    let pageCount = await this.pageNumberCount.innerText();
+    let tableData = await this.table.innerText();
+    let allRecordsArray = tableData.split("\n");
+    filteredFileNameList = allRecordsArray.filter(
+      (element) => element.trim() !== "" && !element.includes("\t")
+    );
+    this.firstRecordFileName = filteredFileNameList[0];
+  }
+
+  async validateFileNameInPreview() {
+    expect(
+      await this.fileNameFromPreview.innerText(),
+      "File name in preview is not as expected"
+    ).toMatch(this.firstRecordFileName);
+  }
+
+  async validateListViewDisplayed() {
+    await expect(this.search, "List view is not displayed").toBeVisible();
+  }
+
+  async clickOnDownload() {
+    await this.downloadButton.click();
+  }
+
+  async validateDownload() {
+    const downloadPromise = this.page.waitForEvent("download");
+    const download = await downloadPromise;
+    await download.createReadStream();
+  }
+
+  async validateLoaderDisplayed() {
+    await expect(this.loader, "Loader is not displayed").toBeVisible();
+  }
+
+  async clickOnEditButton() {
+    await this.editButton.click();
+  }
+
+  async validateUpdateButtonDisplayed() {
+    await expect(
+      this.updateButton,
+      "Update button is not displayed"
+    ).toBeVisible();
+  }
+
+  async validateHeadingOfEditModal() {
+    await expect(
+      this.editModalHeading,
+      "Heading of the edit modal is not as expected"
+    ).toBeVisible();
+  }
+
+  async validateHelpTextOfEditModal() {
+    await expect(
+      this.editModalHelpText,
+      "Help text of the edit modal is not as expected"
+    ).toBeVisible();
+  }
+
+  async validateFolderInEditModal() {
+    expect(
+      await this.uploadCategory.innerText(),
+      "Folder is not as same as file uploaded"
+    ).toMatch(this.categoryOptions[this.randomCategory]);
+  }
+
+  async validateModalDocumentHeading() {
+    await expect(
+      this.modalDocumentHeading,
+      "Heading of the document of the edit modal is not as expected"
+    ).toBeVisible();
+  }
+
+  async validateBackgroundColourOfFileName() {
+    await expect(
+      this.editFileName,
+      "Background colour of the file name in edit modal is not as expected"
+    ).toHaveAttribute("background-color", "rgb(230, 244, 255)");
+  }
+
+  async validateCancelButtonVisible() {
+    await expect(
+      this.cancelButton,
+      "Cancel button is not visible"
+    ).toBeVisible();
+  }
+
+  async clickOnCancelButton() {
+    await this.cancelButton.click();
+  }
+
+  async validateModalIsClosed() {
+    await expect(this.cancelButton, "Edit modal is not closed").toBeHidden();
+  }
+
+  async validateBackgroundColourOfUpdateButton() {
+    await expect(
+      this.updateButton,
+      "Background colour of the update button in edit modal is not as expected"
+    ).toHaveAttribute("background-color", "rgb(47, 84, 235)");
+  }
+
+  async changeFolder() {
+    await this.page
+      .getByText(this.categoryOptions[this.randomCategory], { exact: true })
+      .first()
+      .click();
+  }
+
+  async clickOnUpdateButton() {
+    await this.updateButton.click();
+  }
+
+  async validateFolderInListView() {
+    let folderList: string[] = [];
+    let filteredList: string[] = [];
+    let tableData = await this.table.innerText();
+    let allRecordsArray = tableData.split("\n");
+    allRecordsArray.splice(0, 1);
+    folderList = allRecordsArray.filter((element) => element.includes("\t"));
+    for (let counter = 0; counter < folderList.length - 1; counter++) {
+      filteredList.push(folderList[counter].replace("\t", ""));
+    }
+    await this.waitForLoaderToShow();
+    await this.waitForLoaderToHide();
+    expect(filteredList[0], "Folder is not displayed as edited").toEqual(
+      this.categoryOptions[this.randomCategory]
+    );
+  }
+
+  async validateUpdateToastMessage() {
+    expect(
+      await this.alert.innerText(),
+      "Update success toast message is not as expected"
+    ).toEqual("Success\nDocument updated successfully");
+  }
+
+  async clickOnDeleteButton() {
+    this.deleteButton.click();
+  }
+
+  async validateDeleteModalHeading() {
+    await expect(
+      this.deleteModalHeading,
+      "Delete modal heading is not visible"
+    ).toBeVisible();
+  }
+
+  async validateDeleteConfirmText() {
+    expect(await this.deleteModalContent.innerText()).toEqual(
+      "Are you sure you want to delete " + this.firstRecordFileName + "?"
+    );
+  }
+
+  async validateConfirmButtonVisible() {
+    await expect(
+      this.confirmButton,
+      "Confirm button is not visible"
+    ).toBeVisible();
+  }
+
+  async validateBackgroundColourOfConfirmButton() {
+    await expect(
+      this.updateButton,
+      "Background colour of the confirm button in delete modal is not as expected"
+    ).toHaveAttribute("background-color", "rgb(219, 44, 102)");
+  }
+
+  async clickOnConfirmButton() {
+    await this.confirmButton.click();
+  }
+
+  async waitForLoaderToShow() {
+    await this.loader.first().waitFor();
+  }
+
+  async waitForLoaderToHide() {
+    await this.loader.first().waitFor({ state: "hidden" });
+  }
+
+  async validateDeleteToastMessage() {
+    expect(
+      await this.alert.innerText(),
+      "Delete success toast message is not as expected"
+    ).toEqual("Success\nFile deleted successfully");
+  }
+
+  async validateHelpTextOnDragAndDrop() {
+    await expect(
+      this.helpTextDragAndDrop,
+      "Help text for drag and drop is not visible"
+    ).toBeVisible();
+  }
+
+  async dragAndDropFile() {
+    // Read your file into a buffer.
+    const buffer = readFileSync("./Sample.pdf");
+
+    // Create the DataTransfer and File
+    const dataTransfer = await this.page.evaluateHandle((data) => {
+      const dt = new DataTransfer();
+      // Convert the buffer to a hex array
+      const file = new File([data.toString("hex")], "Sample.pdf", {
+        type: "application/pdf",
+      });
+      dt.items.add(file);
+      return dt;
+    }, buffer);
+
+    // Now dispatch
+    await this.page.dispatchEvent("[data-testid='empty-detail']", "drop", {
+      dataTransfer,
+    });
+  }
+
+  async openUploadModal(filePath: string) {
+    await this.uploadInput.setInputFiles(filePath);
+  }
+
+  async validateFileNameInUploadModal(fileName: string) {
+    expect(
+      await this.fileNameInUploadModal.innerText(),
+      "File name is not displayed in upload modal"
+    ).toMatch(fileName);
+  }
+
+  async validateHeadingInUploadModal() {
+    await expect(
+      this.uploadModalHeading,
+      "Heading of the upload modal is not as expected"
+    ).toBeVisible();
+  }
+
+  async validateSubHeadingInUploadModal() {
+    await expect(
+      this.uploadModalSubHeading,
+      "Sub heading of the upload modal is not as expected"
+    ).toBeVisible();
+  }
+
+  async validateNoDefaultFolderSelected() {
+    expect(
+      await this.uploadCategory.innerText(),
+      "By default no folder selected state is invalid"
+    ).toEqual("Select a folder");
+  }
+
+  async validateXButtonToRemoveDocument() {
+    await expect(
+      this.xButtonForDocument,
+      "X button is not visible for document"
+    ).toBeVisible();
+  }
+
+  async removeFile() {
+    await this.xButtonForDocument.click();
+  }
+
+  async validateFileRemoved(fileName: string) {
+    await expect(
+      this.fileNameInUploadModal,
+      "File is not removed"
+    ).toBeHidden();
+  }
+
+  async validateUploadButtonDisabled() {
+    await expect(
+      this.uploadButton,
+      "Upload button is not disabled"
+    ).toBeDisabled();
+  }
+
+  async validateUploadButtonEnabled() {
+    await expect(
+      this.uploadButton,
+      "Upload button is not enabled"
+    ).toBeEnabled();
+  }
+
+  async selectRandomFolder() {
+    await this.uploadCategory.click();
+    await this.page
+      .getByTitle(this.categoryOptions[this.randomCategory])
+      .locator("div")
+      .click();
+  }
+
+  async validateProgressBarDisplayed() {
+    await expect(
+      this.progressBar,
+      "Progress bar is not displayed"
+    ).toBeVisible();
+    await expect(
+      this.progressBarText,
+      "Progress bar text is incorrect"
+    ).toBeVisible();
+  }
+
+  async clickOnProgressBar() {
+    await this.progressBar.click();
+  }
+
+  async validateProgressBarHeading(noOfFiles: string) {
+    expect(
+      await this.progressBarDetailsHeading.innerText(),
+      "Heading of the upload progress bar is not as expected"
+    ).toEqual(noOfFiles + " files uploaded");
+  }
+
+  async validateFileNameInProgressBarDetails(filePath: string[]) {
+    for (let iterator = 0; iterator < filePath.length; iterator++) {
+      await expect(
+        this.page.locator("article").getByText(filePath[iterator]),
+        "File name is not displayed in upload progress bar"
+      ).toBeVisible();
+    }
+  }
+
+  async validateFolderInProgressBarDetails(noOfFilesUploaded: number) {
+    await expect(
+      this.page
+        .locator("article")
+        .getByText(this.categoryOptions[this.randomCategory]),
+      "Folder name is not displayed in upload progress bar"
+    ).toHaveCount(noOfFilesUploaded);
+  }
+
+  async uploadLargeFiles(filePath: string[]) {
+    await this.uploadInput.setInputFiles(filePath);
+    await this.uploadCategory.click();
+    await this.page
+      .getByTitle(this.categoryOptions[this.randomCategory])
+      .locator("div")
+      .click();
+    await this.uploadModalUploadButton.click();
+  }
+
+  async validateProgressStatus(noOfFilesUploaded: string) {
+    expect(await this.fileUploadProgressStatus.innerText()).toEqual(
+      "0/" + noOfFilesUploaded
+    );
+  }
+
+  async validateInProgressStatusColour() {
+    await expect(
+      this.progressBar,
+      "Background colour of in progress status is not as expected"
+    ).toHaveAttribute("background-color", "rgba(47, 84, 235)");
+  }
+
+  async validateEditModalDocumentHeading() {
+    await expect(
+      this.editModalHeading,
+      "Heading of the document of the edit modal is not as expected"
+    ).toBeVisible();
+  }
+
+  async validateProgressBarRoundDisplayed() {
+    await expect(
+      this.progressBarRound,
+      "Progress bar inside upload detail modal is not displayed"
+    ).toBeVisible();
+  }
+
+  async validateExclamationMark() {
+    await expect(
+      this.exclamationMark,
+      "Exclamation mark is not displayed"
+    ).toBeVisible();
+  }
+
+  async validateSuccessMark() {
+    await expect(
+      this.successMark,
+      "Success mark is not displayed"
+    ).toBeVisible();
+  }
+
+  async validateInProgressBarHeading(noOfFiles: string) {
+    await expect(
+      this.page.getByText("Uploading " + noOfFiles + " files"),
+      "Heading of the in progress upload bar is not as expected"
+    ).toBeVisible();
+  }
+
+  async validateUploadingText() {
+    await expect(
+      this.uploadingText,
+      "Uploading... text is not visible"
+    ).toBeVisible();
+  }
+
+  async clickOnDeleteIcon() {
+    await this.deleteIcon.click();
+  }
+
+  async validateUploadStopped() {
+    await expect(this.uploadFailedText, "Upload did not stop").toBeVisible();
+  }
+
+  async clickOnTryAgain() {
+    this.tryAgainButton.click();
+  }
+
+  async validateCancelAllDisplayed() {
+    await expect(
+      this.cancelAllUploadsButton,
+      "Cancel all uploads button is not displayed"
+    ).toBeVisible();
+  }
+
+  async validateSuccessText() {
+    expect(
+      await this.progressBar.innerText(),
+      "Files uploaded successfully is not displayed on successful upload"
+    ).toEqual("Files uploaded successfully");
+  }
+
+  async clickOnCancelAllUploads() {
+    await this.cancelAllUploadsButton.click();
+  }
+
+  async validateAllFileUploadStops(noOfFiles: number) {
+    await expect(
+      this.tryAgainButton,
+      "All file uploads are not stopped"
+    ).toHaveCount(noOfFiles);
   }
 }

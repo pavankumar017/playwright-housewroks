@@ -931,7 +931,6 @@ export class CreatePatient {
   }
 
   async validateNextPageDisabled() {
-    await this.nextPage.waitFor();
     await this.pageNumberCount.click();
     expect(
       this.nextPage.isDisabled(),
@@ -940,10 +939,9 @@ export class CreatePatient {
   }
 
   async validateNextPageEnabled() {
-    await this.nextPage.waitFor();
     expect(
-      this.nextPage.isEnabled(),
-      "Previous page button is not disabled"
+      await this.nextPage.isEnabled(),
+      "Next page button is not enabled"
     ).toBeTruthy();
   }
 
