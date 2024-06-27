@@ -23,9 +23,7 @@ export class PatientMaster {
     this.table = this.page.locator(
       "(//*[@class='table-wrapper'])/div/div/div/div/div/div/table"
     );
-    this.patientTable = this.page.locator(
-      "(//*[@class='ant-table-content'])/table"
-    );
+    this.patientTable = this.page.getByTestId("patient-list-table");
     this.heading = this.page.getByText("Patient Master");
     this.search = this.page.locator("//*[@data-testid='search-filter-input']");
     this.searchResult = this.page.locator(
@@ -143,11 +141,15 @@ export class PatientMaster {
     middleName: string,
     lastName: string
   ) {
+    let filteredArray: string[] = [];
     let tableData = await this.patientTable.innerText();
     let allRecordsArray = tableData.split("\n");
-    allRecordsArray.splice(0, 4);
+    filteredArray = allRecordsArray.filter(
+      (element) => element.trim() !== "" && element !== "\t"
+    );
+    filteredArray.splice(0, 4);
     let expectedName = lastName + ", " + firstName + " " + middleName[0];
-    let firstRecord = allRecordsArray[0].split("\t");
+    let firstRecord = filteredArray[0].split("\t");
     let name = firstRecord[1];
     expect(
       name,

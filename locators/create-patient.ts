@@ -243,6 +243,18 @@ export class CreatePatient {
       this.dateOfBirth,
       "Date of birth name value is not null after clear"
     ).toHaveValue("");
+    expect(
+      await this.sex.innerText(),
+      "Sex value is not null after clear"
+    ).toEqual("Select");
+    await expect(
+      this.diseaseType.locator("[class='ant-radio-checked']"),
+      "Disease type value is not null after clear"
+    ).toBeHidden();
+    expect(
+      await this.affectedOrgan.innerText(),
+      "Affected organ value is not null after clear"
+    ).toEqual("Select");
   }
 
   async enterDataIntoMandatoryFields() {
@@ -538,7 +550,7 @@ export class CreatePatient {
     let rank = allRecordsArray[0]
       .substring(allRecordsArray[0].lastIndexOf("\t"))
       .trim();
-    expect(rank, "Rank is not 1 for exact match patient").toEqual("1");
+    expect(rank, "Rank is not 1.00 for exact match patient").toEqual("1.00");
   }
 
   async clickOnNextButton() {
