@@ -3,6 +3,7 @@ import { ContactPeople } from "../locators/contact-people";
 import { CreatePatient } from "../locators/create-patient";
 import { PatientMaster } from "../locators/patient-master";
 import { SideMenu } from "../locators/side-menu";
+import { Users } from "../locators/users";
 
 test("Create contact person with only mandatory fields", async ({
   page,
@@ -54,4 +55,19 @@ test("Create patient with all fields", async ({ page, baseURL }) => {
   await createPatient.waitTillCreateButtonEnabled();
   await createPatient.clickOnCreateButton();
   await createPatient.validateSuccessfulCreation();
+});
+
+test("Create user", async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
+  const sideMenu = new SideMenu(page);
+  await sideMenu.openUserManagement();
+  const users = new Users(page);
+  await users.clickOnCreateButton();
+  await users.enterFirstName();
+  await users.enterLastName();
+  await users.selectSex();
+  await users.enterEmail();
+  await users.clickOnAutoGenerateUsername();
+  await users.selectUserType();
+  console.log("Pass");
 });

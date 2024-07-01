@@ -93,4 +93,9 @@ export class SideMenu {
     await this.people.waitFor();
     await this.people.click();
   }
+
+  async openUserManagement() {
+    await this.administrativeSideMenu.click();
+    await this.userManagement.click();
+  }
 }
