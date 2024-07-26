@@ -19,3 +19,4 @@ Practices needs to be followed:
 1. POM structure
 2. Tagging the test cases
 3. fixtures for locators instances
+# rbp-automation
